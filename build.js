@@ -255,7 +255,7 @@ function buildIndex(posts, folders) {
             : `<li class="no-posts">No guides in this category yet</li>`;
 
           return `<li>
-            <div class="wu-corner-card folder-card">
+            <div class="wu-corner-card folder-card" onclick="if(!event.target.closest('a')){window.location.href='./posts/${f.slug}/index.html'}">
               <div class="wu-corner-marks">
                 <span class="mark top-left"></span>
                 <span class="mark top-right"></span>
@@ -263,12 +263,12 @@ function buildIndex(posts, folders) {
                 <span class="mark bottom-right"></span>
               </div>
               <div class="folder-card-header">
-                <a href="./posts/${f.slug}/index.html" class="folder-title-link">
+                <div class="folder-title-wrapper">
                   <div class="folder-icon-wrapper">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                   </div>
                   <h3 class="folder-card-title">${f.title}</h3>
-                </a>
+                </div>
                 <span class="folder-post-count">${f.posts.length} ${f.posts.length === 1 ? 'post' : 'posts'}</span>
               </div>
               <p class="folder-card-excerpt">${f.description}</p>
@@ -277,9 +277,6 @@ function buildIndex(posts, folders) {
                 <ul class="folder-posts-list">
                   ${postLinks}
                 </ul>
-                <div style="margin-top: 12px; text-align: right;">
-                  <a href="./posts/${f.slug}/index.html" class="view-folder-link">View all in folder &rarr;</a>
-                </div>
               </div>
             </div>
           </li>`;
