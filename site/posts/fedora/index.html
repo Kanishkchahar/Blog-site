@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel) — kanishk.dev</title>
-<meta name="description" content="A clean walkthrough for getting your GPU properly recognized on Fedora — RPM Fusion, akmod-nvidia, Secure Boot signing, and how to verify it actually worked.">
+<title>Fedora Linux Guides — kanishk.dev</title>
+<meta name="description" content="Step-by-step documentation for installing drivers, configuring settings, and optimizing performance on Fedora Workstation.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -19,7 +19,7 @@
     </a>
     <nav class="shell-nav">
       <a href="../../index.html" class="nav-link">Home</a>
-      <a href="../../notes.html" class="nav-link">Notes</a>
+      <a href="../../notes.html" class="nav-link active">Notes</a>
       <a href="../../about.html" class="nav-link">About</a>
     </nav>
     <div class="header-search">
@@ -29,9 +29,7 @@
     </div>
   </div>
 </header>
-
 <div class="doc-layout">
-  <!-- Left Navigation Sidebar -->
   <aside class="doc-sidebar-left">
     <div class="sidebar-group">
         <div class="sidebar-title">
@@ -39,7 +37,7 @@
           <span class="sidebar-arrow">&#9662;</span>
         </div>
         <ul class="sidebar-links">
-          <li><a href="../../posts/fedora/fedora-gpu-drivers.html" class="active">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</a></li>
+          <li><a href="../../posts/fedora/fedora-gpu-drivers.html">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</a></li>
         </ul>
       </div>
 <div class="sidebar-group collapsed">
@@ -53,41 +51,29 @@
       </div>
   </aside>
 
-  <!-- Central Documentation Content -->
   <main class="doc-content">
-    <div class="breadcrumb"><a href="../../index.html">Documentation</a> / <a href="../../notes.html">Fedora Linux Guides</a> / fedora-gpu-drivers.md</div>
-    <h1>Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</h1>
-    
-    <div class="callout">
-      <div class="callout-title">&#9888; Note</div>
-      <div class="callout-body">Tested on Fedora 40 Workstation Edition. Keep your system updated via <code>sudo dnf upgrade</code> before applying kernel and driver tweaks.</div>
+    <div class="breadcrumb"><a href="../../index.html">Home</a> / <a href="../../notes.html">Notes</a> / Fedora Linux Guides</div>
+    <h1>Fedora Linux Guides</h1>
+    <p style="color:var(--text-muted);margin-bottom:36px">Step-by-step documentation for installing drivers, configuring settings, and optimizing performance on Fedora Workstation.</p>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <a href="../../posts/fedora/fedora-gpu-drivers.html" class="note-row">
+          <div class="note-row-title">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</div>
+          <div class="note-row-meta">
+            <span class="note-row-date">2026-08-11</span>
+            <div class="tag-row"><span class="tag">fedora</span><span class="tag">linux</span><span class="tag">nvidia</span><span class="tag">drivers</span></div>
+          </div>
+          <p class="note-row-excerpt">A clean walkthrough for getting your GPU properly recognized on Fedora — RPM Fusion, akmod-nvidia, Secure Boot signing, and how to verify it actually worked.</p>
+        </a>
     </div>
-
-    <article class="post-body">
-      <h2>Overview</h2>
-<p>Setting up GPU drivers on Fedora Workstation can be tricky, especially with Secure Boot enabled.</p>
-<h3>1. Enable RPM Fusion</h3>
-<pre><code class="language-bash">sudo dnf install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-</code></pre>
-<h3>2. Install NVIDIA Driver</h3>
-<pre><code class="language-bash">sudo dnf install akmod-nvidia xorg-x11-drv-nvidia-cuda
-</code></pre>
-
-    </article>
-
   </main>
 
-  <!-- Right TOC Sidebar -->
   <aside class="doc-sidebar-right">
-    <div class="toc-title">On this page</div>
+    <div class="toc-title">In this category</div>
     <ul class="toc-links">
-      <li><a href="#">Overview</a></li>
-      <li><a href="#">Installation Steps</a></li>
-      <li><a href="#">Verification & Status</a></li>
+      <li><a href="../../posts/fedora/fedora-gpu-drivers.html">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</a></li>
     </ul>
   </aside>
 </div>
-
 <footer class="shell-footer">
   <span>nullptr.log &middot; Open source Linux Documentation &middot; Powered by Node.js & Markdown</span>
 </footer>

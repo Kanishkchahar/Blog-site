@@ -9,6 +9,7 @@ const ROOT = __dirname;
 const CONTENT_DIR = path.join(ROOT, 'content');
 const SITE_DIR = path.join(ROOT, 'site');
 const ASSETS_SRC = path.join(ROOT, 'site-assets');
+const IMAGES_DIR = path.join(ROOT, 'images');
 
 // ---- site-wide config -----------------------------------------------------
 const SITE = {
@@ -25,6 +26,46 @@ const SITE = {
 };
 
 // ---- helpers ---------------------------------------------------------------
+// ---- image copy & helper ---------------------------------------------------
+const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.bmp']);
+
+function copyImages() {
+  function copyDirRecursive(srcDir, destDir) {
+    if (!fs.existsSync(srcDir)) return;
+    if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+
+    const entries = fs.readdirSync(srcDir, { withFileTypes: true });
+    for (const entry of entries) {
+      const srcPath = path.join(srcDir, entry.name);
+      const destPath = path.join(destDir, entry.name);
+
+      if (entry.isDirectory()) {
+        copyDirRecursive(srcPath, destPath);
+      } else if (entry.isFile()) {
+        const ext = path.extname(entry.name).toLowerCase();
+        if (IMAGE_EXTS.has(ext)) {
+          fs.mkdirSync(path.dirname(destPath), { recursive: true });
+          fs.copyFileSync(srcPath, destPath);
+        }
+      }
+    }
+  }
+
+  // 1. Copy images from root images/ directory to site/images and site/
+  copyDirRecursive(IMAGES_DIR, path.join(SITE_DIR, 'images'));
+  copyDirRecursive(IMAGES_DIR, SITE_DIR);
+
+  // 2. Copy images from content directory as well
+  copyDirRecursive(CONTENT_DIR, path.join(SITE_DIR, 'images'));
+  copyDirRecursive(CONTENT_DIR, SITE_DIR);
+}
+
+function formatTitle(slug) {
+  return slug
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function readPosts() {
   const posts = [];
   const foldersMap = {};
@@ -33,8 +74,8 @@ function readPosts() {
     if (foldersMap[folderSlug]) return foldersMap[folderSlug];
 
     const folderPath = path.join(CONTENT_DIR, folderSlug);
-    let title = folderSlug.charAt(0).toUpperCase() + folderSlug.slice(1);
-    let description = `Guides and posts related to ${title}.`;
+    let title = formatTitle(folderSlug);
+    let description = `Guides and notes in ${title}.`;
 
     if (folderSlug !== 'general') {
       const metaPath = path.join(folderPath, 'meta.json');
@@ -66,6 +107,8 @@ function readPosts() {
     const stat = fs.statSync(fullPath);
 
     if (stat.isDirectory()) {
+      if (entry === 'images' || entry.startsWith('.')) continue;
+
       const files = fs.readdirSync(fullPath).filter((f) => f.endsWith('.md'));
       const folderMeta = getFolderMeta(entry);
 
@@ -73,12 +116,16 @@ function readPosts() {
         const raw = fs.readFileSync(path.join(fullPath, file), 'utf8');
         const { data, content } = matter(raw);
         const slug = file.replace(/\.md$/, '');
+        const title = data.title || formatTitle(slug);
+        const date = data.date || new Date().toISOString().split('T')[0];
+        const excerpt = data.excerpt || (content.trim().replace(/^#+.*$/gm, '').slice(0, 140).trim() + '...');
+
         const post = {
           slug,
-          title: data.title,
-          date: data.date,
+          title,
+          date,
           tags: data.tags || [],
-          excerpt: data.excerpt || '',
+          excerpt,
           html: md.render(content),
           folder: {
             slug: folderMeta.slug,
@@ -94,12 +141,16 @@ function readPosts() {
       const raw = fs.readFileSync(fullPath, 'utf8');
       const { data, content } = matter(raw);
       const slug = entry.replace(/\.md$/, '');
+      const title = data.title || formatTitle(slug);
+      const date = data.date || new Date().toISOString().split('T')[0];
+      const excerpt = data.excerpt || (content.trim().replace(/^#+.*$/gm, '').slice(0, 140).trim() + '...');
+
       const post = {
         slug,
-        title: data.title,
-        date: data.date,
+        title,
+        date,
         tags: data.tags || [],
-        excerpt: data.excerpt || '',
+        excerpt,
         html: md.render(content),
         folder: {
           slug: folderMeta.slug,
@@ -150,15 +201,23 @@ function head(title, description, relPath = '.') {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="${relPath}/assets/style.css">
 </head>
-<body>`;
+<body>
+<script src="${relPath}/assets/script.js" defer><\/script>`;
 }
 
 function header(active, relPath = '.') {
+  const nav = (href, label, key) =>
+    `<a href="${href}" class="nav-link${active === key ? ' active' : ''}">${label}</a>`;
   return `<header class="shell-bar">
   <div class="shell-bar-inner">
     <a href="${relPath}/index.html" class="shell-brand">
       KANISHK.DEV
     </a>
+    <nav class="shell-nav">
+      ${nav(`${relPath}/index.html`, 'Home', 'home')}
+      ${nav(`${relPath}/notes.html`, 'Notes', 'notes')}
+      ${nav(`${relPath}/about.html`, 'About', 'about')}
+    </nav>
     <div class="header-search">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       <span>Search</span>
@@ -204,18 +263,23 @@ function buildIndex(posts, folders) {
                 <span class="mark bottom-right"></span>
               </div>
               <div class="folder-card-header">
-                <div class="folder-icon-wrapper">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                </div>
+                <a href="./posts/${f.slug}/index.html" class="folder-title-link">
+                  <div class="folder-icon-wrapper">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                  </div>
+                  <h3 class="folder-card-title">${f.title}</h3>
+                </a>
                 <span class="folder-post-count">${f.posts.length} ${f.posts.length === 1 ? 'post' : 'posts'}</span>
               </div>
-              <h3 class="folder-card-title">${f.title}</h3>
               <p class="folder-card-excerpt">${f.description}</p>
               <div class="folder-posts-section">
                 <div class="section-divider"></div>
                 <ul class="folder-posts-list">
                   ${postLinks}
                 </ul>
+                <div style="margin-top: 12px; text-align: right;">
+                  <a href="./posts/${f.slug}/index.html" class="view-folder-link">View all in folder &rarr;</a>
+                </div>
               </div>
             </div>
           </li>`;
@@ -284,15 +348,19 @@ function buildPost(post, folders) {
   const sidebarLinks = folders
     .map((f) => {
       if (f.posts.length === 0) return '';
+      const isCurrentFolder = f.slug === post.folder.slug;
       const links = f.posts
         .map((p) => {
           const href = `${relPath}/posts/${f.slug}/${p.slug}.html`;
-          const isActive = p.slug === post.slug && f.slug === post.folder.slug;
+          const isActive = p.slug === post.slug && isCurrentFolder;
           return `<li><a href="${href}"${isActive ? ' class="active"' : ''}>${p.title}</a></li>`;
         })
         .join('\n');
-      return `<div class="sidebar-group">
-        <div class="sidebar-title">${f.title} <span>&#9662;</span></div>
+      return `<div class="sidebar-group${isCurrentFolder ? '' : ' collapsed'}">
+        <div class="sidebar-title">
+          <span>${f.title}</span>
+          <span class="sidebar-arrow">&#9662;</span>
+        </div>
         <ul class="sidebar-links">
           ${links}
         </ul>
@@ -306,13 +374,6 @@ ${header('', relPath)}
 <div class="doc-layout">
   <!-- Left Navigation Sidebar -->
   <aside class="doc-sidebar-left">
-    <div class="sidebar-group">
-      <div class="sidebar-title">User Guide <span>&#9662;</span></div>
-      <ul class="sidebar-links">
-        <li><a href="${relPath}/index.html">Overview</a></li>
-        <li><a href="${relPath}/about.html">About nullptr.log</a></li>
-      </ul>
-    </div>
     ${sidebarLinks}
   </aside>
 
@@ -354,7 +415,10 @@ function buildNotes(posts, folders) {
         .map((p) => `<li><a href="./posts/${f.slug}/${p.slug}.html">${p.title}</a></li>`)
         .join('\n');
       return `<div class="sidebar-group">
-        <div class="sidebar-title">${f.title}</div>
+        <div class="sidebar-title">
+          <span>${f.title}</span>
+          <span class="sidebar-arrow">&#9662;</span>
+        </div>
         <ul class="sidebar-links">
           ${links}
         </ul>
@@ -366,25 +430,36 @@ function buildNotes(posts, folders) {
     ? folders
         .map((f) => {
           if (f.posts.length === 0) return '';
-          const noteRows = f.posts
+          const mdFiles = f.posts
             .map((p) => {
               const tags = p.tags.map((t) => `<span class="tag">${t}</span>`).join('');
-              return `<a href="./posts/${f.slug}/${p.slug}.html" class="note-row">
-                <div class="note-row-title">${p.title}</div>
-                <div class="note-row-meta">
-                  <span class="note-row-date">${isoDate(p.date)}</span>
-                  <div class="tag-row">${tags}</div>
+              return `<a href="./posts/${f.slug}/${p.slug}.html" class="md-file-row">
+                <div class="md-file-header">
+                  <div class="md-file-name">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>${p.slug}.md</span>
+                  </div>
+                  <span class="md-file-date">${isoDate(p.date)}</span>
                 </div>
-                <p class="note-row-excerpt">${p.excerpt}</p>
+                <div class="md-file-title">${p.title}</div>
+                <p class="md-file-excerpt">${p.excerpt}</p>
+                <div class="tag-row">${tags}</div>
               </a>`;
             })
             .join('\n');
 
-          return `<div class="notes-category-section" style="margin-bottom: 48px;">
-            <h2 class="category-section-title" style="font-size: 20px; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px; color: var(--cyan);">${f.title}</h2>
-            <p style="color:var(--text-muted); font-size:13.5px; margin-bottom: 20px;">${f.description}</p>
-            <div class="notes-list" style="display:flex; flex-direction:column; gap:16px;">
-              ${noteRows}
+          return `<div class="folder-container-card">
+            <div class="folder-header-bar">
+              <div class="folder-header-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon" style="color: var(--cyan);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span class="folder-path-name">content/${f.slug}/</span>
+                <span class="folder-title-badge">${f.title}</span>
+              </div>
+              <span class="folder-file-count">${f.posts.length} ${f.posts.length === 1 ? 'file' : 'files'}</span>
+            </div>
+            <p class="folder-desc">${f.description}</p>
+            <div class="folder-files-list">
+              ${mdFiles}
             </div>
           </div>`;
         })
@@ -395,13 +470,6 @@ function buildNotes(posts, folders) {
 ${header('notes')}
 <div class="doc-layout">
   <aside class="doc-sidebar-left">
-    <div class="sidebar-group">
-      <div class="sidebar-title">Overview</div>
-      <ul class="sidebar-links">
-        <li><a href="./index.html">Home</a></li>
-        <li><a href="./notes.html" class="active">All Notes</a></li>
-      </ul>
-    </div>
     ${sidebarLinks}
   </aside>
 
@@ -429,15 +497,142 @@ function buildAbout() {
   return `${head(`About — ${SITE.title}`, 'About this blog')}
 ${header('about')}
 <main class="page">
-  <div class="post-header">
-    <div class="breadcrumb"><a href="./index.html">Documentation</a> / about.md</div>
-    <h1>About nullptr.log</h1>
+  <div class="about-container">
+    <div class="breadcrumb"><a href="./index.html">Home</a> / About</div>
+
+    <!-- Profile Card -->
+    <div class="about-profile-card">
+      <div class="about-avatar">K</div>
+      <div class="about-profile-info">
+        <h2>Kanishk Chahar</h2>
+        <div class="about-profile-handle">@kanishkchahar &middot; kanishk.dev</div>
+        <p class="about-profile-bio">
+          Engineering notes, hardware walkthroughs, and Linux Workstation documentation. 
+          Building minimal, high-performance static tools with zero runtime dependencies.
+        </p>
+        <div class="hero-actions" style="margin-top: 12px;">
+          <a href="https://github.com/Kanishkchahar/Blog-site" target="_blank" class="btn-secondary" style="padding: 6px 14px; font-size: 13px;">View GitHub &nearr;</a>
+          <a href="./notes.html" class="btn-primary" style="padding: 6px 14px; font-size: 13px;">Browse All Notes &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 Column Grid -->
+    <div class="about-grid">
+      <!-- Left: Specs & Environment -->
+      <div class="about-card">
+        <div class="about-card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 16V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8m16 0H4m16 0l1.28 2.55A1 1 0 0 1 20.38 20H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
+          Environment &amp; Stack
+        </div>
+        <ul class="spec-list">
+          <li class="spec-item"><span class="spec-label">Primary OS</span><span class="spec-val">Fedora Linux Workstation</span></li>
+          <li class="spec-item"><span class="spec-label">Shell &amp; Terminal</span><span class="spec-val">Bash / GNOME Terminal</span></li>
+          <li class="spec-item"><span class="spec-label">Site Generator</span><span class="spec-val">Custom Node.js SSG</span></li>
+          <li class="spec-item"><span class="spec-label">Markdown Parser</span><span class="spec-val">gray-matter + markdown-it</span></li>
+          <li class="spec-item"><span class="spec-label">Styling Engine</span><span class="spec-val">Vanilla CSS (Zero Tailwind)</span></li>
+          <li class="spec-item"><span class="spec-label">Hosting Platform</span><span class="spec-val">GitHub Pages</span></li>
+        </ul>
+      </div>
+
+      <!-- Right: Site Mission & Architecture -->
+      <div class="about-card">
+        <div class="about-card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Blog Philosophy
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <span class="feature-icon">&#10004;</span>
+            <div><strong>Practical &amp; Verified:</strong> Step-by-step guides tested on actual hardware and real Linux installations.</div>
+          </li>
+          <li class="feature-item">
+            <span class="feature-icon">&#10004;</span>
+            <div><strong>Folder Categories:</strong> Auto-grouped markdown articles indexed by directory subfolders &amp; metadata.</div>
+          </li>
+          <li class="feature-item">
+            <span class="feature-icon">&#10004;</span>
+            <div><strong>Zero Bloat:</strong> Blazing-fast static HTML loaded with zero client-side JavaScript frameworks.</div>
+          </li>
+        </ul>
+        <div class="tech-stack-row">
+          <span class="tag">Linux</span>
+          <span class="tag">Fedora</span>
+          <span class="tag">Node.js</span>
+          <span class="tag">Markdown</span>
+          <span class="tag">JavaScript</span>
+          <span class="tag">CSS3</span>
+        </div>
+      </div>
+    </div>
   </div>
-  <article class="post-body">
-    <p>This site serves as a practical, technical documentation log for Linux maintenance, specifically Fedora setups, driver troubleshooting, system performance optimizations, and dev tooling.</p>
-    <p>All posts are written in standard Markdown and generated with a lightweight build script. Free hosting on GitHub Pages and zero server maintenance.</p>
-  </article>
 </main>
+${footer()}`;
+}
+
+function buildCategory(folder, folders) {
+  const relPath = '../..';
+
+  const sidebarLinks = folders
+    .map((f) => {
+      if (f.posts.length === 0) return '';
+      const isCurrentFolder = f.slug === folder.slug;
+      const links = f.posts
+        .map((p) => `<li><a href="${relPath}/posts/${f.slug}/${p.slug}.html">${p.title}</a></li>`)
+        .join('\n');
+      return `<div class="sidebar-group${isCurrentFolder ? '' : ' collapsed'}">
+        <div class="sidebar-title">
+          <span>${f.title}</span>
+          <span class="sidebar-arrow">&#9662;</span>
+        </div>
+        <ul class="sidebar-links">
+          ${links}
+        </ul>
+      </div>`;
+    })
+    .join('\n');
+
+  const postCards = folder.posts.length > 0
+    ? folder.posts.map((p) => {
+        const tags = p.tags.map((t) => `<span class="tag">${t}</span>`).join('');
+        return `<a href="${relPath}/posts/${folder.slug}/${p.slug}.html" class="note-row">
+          <div class="note-row-title">${p.title}</div>
+          <div class="note-row-meta">
+            <span class="note-row-date">${isoDate(p.date)}</span>
+            <div class="tag-row">${tags}</div>
+          </div>
+          <p class="note-row-excerpt">${p.excerpt}</p>
+        </a>`;
+      }).join('\n')
+    : `<p style="color:var(--text-muted)">No posts in this category yet.</p>`;
+
+  const tocLinks = folder.posts
+    .map((p) => `<li><a href="${relPath}/posts/${folder.slug}/${p.slug}.html">${p.title}</a></li>`)
+    .join('\n');
+
+  return `${head(`${folder.title} — ${SITE.title}`, folder.description, relPath)}
+${header('notes', relPath)}
+<div class="doc-layout">
+  <aside class="doc-sidebar-left">
+    ${sidebarLinks}
+  </aside>
+
+  <main class="doc-content">
+    <div class="breadcrumb"><a href="${relPath}/index.html">Home</a> / <a href="${relPath}/notes.html">Notes</a> / ${folder.title}</div>
+    <h1>${folder.title}</h1>
+    <p style="color:var(--text-muted);margin-bottom:36px">${folder.description}</p>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      ${postCards}
+    </div>
+  </main>
+
+  <aside class="doc-sidebar-right">
+    <div class="toc-title">In this category</div>
+    <ul class="toc-links">
+      ${tocLinks}
+    </ul>
+  </aside>
+</div>
 ${footer()}`;
 }
 
@@ -451,6 +646,8 @@ function build() {
     fs.copyFileSync(path.join(ASSETS_SRC, file), path.join(SITE_DIR, 'assets', file));
   }
 
+  copyImages();
+
   const { posts, folders } = readPosts();
 
   fs.writeFileSync(path.join(SITE_DIR, 'index.html'), buildIndex(posts, folders));
@@ -459,6 +656,12 @@ function build() {
 
   for (const folder of folders) {
     fs.mkdirSync(path.join(SITE_DIR, 'posts', folder.slug), { recursive: true });
+    // Generate category index page
+    fs.writeFileSync(
+      path.join(SITE_DIR, 'posts', folder.slug, 'index.html'),
+      buildCategory(folder, folders)
+    );
+    // Generate individual post pages
     for (const post of folder.posts) {
       fs.writeFileSync(
         path.join(SITE_DIR, 'posts', folder.slug, `${post.slug}.html`),

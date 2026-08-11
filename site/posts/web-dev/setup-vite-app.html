@@ -3,8 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel) — kanishk.dev</title>
-<meta name="description" content="A clean walkthrough for getting your GPU properly recognized on Fedora — RPM Fusion, akmod-nvidia, Secure Boot signing, and how to verify it actually worked.">
+<title>Setup Vite App — kanishk.dev</title>
+<meta name="description" content="Quick walkthrough for initializing a high-performance frontend project using Vite and Node.js on Linux.
+
+
+
+Run the following command in yo...">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,30 +37,30 @@
 <div class="doc-layout">
   <!-- Left Navigation Sidebar -->
   <aside class="doc-sidebar-left">
-    <div class="sidebar-group">
+    <div class="sidebar-group collapsed">
         <div class="sidebar-title">
           <span>Fedora Linux Guides</span>
           <span class="sidebar-arrow">&#9662;</span>
         </div>
         <ul class="sidebar-links">
-          <li><a href="../../posts/fedora/fedora-gpu-drivers.html" class="active">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</a></li>
+          <li><a href="../../posts/fedora/fedora-gpu-drivers.html">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</a></li>
         </ul>
       </div>
-<div class="sidebar-group collapsed">
+<div class="sidebar-group">
         <div class="sidebar-title">
           <span>Web Dev</span>
           <span class="sidebar-arrow">&#9662;</span>
         </div>
         <ul class="sidebar-links">
-          <li><a href="../../posts/web-dev/setup-vite-app.html">Setup Vite App</a></li>
+          <li><a href="../../posts/web-dev/setup-vite-app.html" class="active">Setup Vite App</a></li>
         </ul>
       </div>
   </aside>
 
   <!-- Central Documentation Content -->
   <main class="doc-content">
-    <div class="breadcrumb"><a href="../../index.html">Documentation</a> / <a href="../../notes.html">Fedora Linux Guides</a> / fedora-gpu-drivers.md</div>
-    <h1>Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</h1>
+    <div class="breadcrumb"><a href="../../index.html">Documentation</a> / <a href="../../notes.html">Web Dev</a> / setup-vite-app.md</div>
+    <h1>Setup Vite App</h1>
     
     <div class="callout">
       <div class="callout-title">&#9888; Note</div>
@@ -64,14 +68,16 @@
     </div>
 
     <article class="post-body">
-      <h2>Overview</h2>
-<p>Setting up GPU drivers on Fedora Workstation can be tricky, especially with Secure Boot enabled.</p>
-<h3>1. Enable RPM Fusion</h3>
-<pre><code class="language-bash">sudo dnf install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+      <h1>Setting Up a Fast Vite App</h1>
+<p>Quick walkthrough for initializing a high-performance frontend project using Vite and Node.js on Linux.</p>
+<h2>1. Quick Start</h2>
+<p>Run the following command in your terminal:</p>
+<pre><code class="language-bash">npx create-vite@latest my-app --template react
+cd my-app
+npm install
+npm run dev
 </code></pre>
-<h3>2. Install NVIDIA Driver</h3>
-<pre><code class="language-bash">sudo dnf install akmod-nvidia xorg-x11-drv-nvidia-cuda
-</code></pre>
+<p><img src="/images/README.md" alt="Vite Setup Guide"></p>
 
     </article>
 
