@@ -7,7 +7,7 @@
 <meta name="description" content="notes from a Linux box that mostly works">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./assets/style.css">
 </head>
 <body>
@@ -32,7 +32,7 @@
       <p class="hero-desc">Real-world guides on Linux, dev tools, system setup, and engineering workflows — straight from hands-on experience, no fluff.</p>
       
       <div class="hero-actions">
-        <a href="#guides" class="btn-primary">Browse Notes &rarr;</a>
+        <a href="./notes.html" class="btn-primary">Browse Notes &rarr;</a>
         <a href="https://github.com/Kanishkchahar/Blog-site" target="_blank" class="btn-secondary">View on GitHub &nearr;</a>
       </div>
       <div class="hero-footnote">Free. Open source. Written in Markdown. Built with Node.js.</div>
@@ -52,8 +52,8 @@
         <div class="terminal-output">Fedora release 40 (Thirty-Nine / Workstation Edition)</div>
         <br>
         <div><span class="terminal-prompt">[kanishk@fedora ~]$</span> <span class="terminal-cmd">node build.js</span></div>
-        <div class="terminal-output">&#10004; Parsed Markdown content</div>
-        <div class="terminal-output">&#10004; Generated static HTML into ./site</div>
+        <div class="terminal-output">&#10004; Scanned content subdirectories</div>
+        <div class="terminal-output">&#10004; Generated category folders on index page</div>
         <div class="terminal-output">&#10004; Ready for GitHub Pages deployment</div>
       </div>
     </div>
@@ -63,28 +63,39 @@
 
 <main class="page" id="guides">
   <div class="section-header">
-    <h2>Fedora Linux How-To & Documentation</h2>
-    <p>Everything tested on actual hardware and documented step-by-step.</p>
+    <h2>Knowledge Base Categories</h2>
+    <p>Select a category or jump straight to a guide below.</p>
   </div>
   <ul class="post-grid">
     <li>
-            <a href="./posts/fedora-gpu-drivers.html" style="text-decoration: none;">
-              <div class="wu-corner-card">
-                <div class="wu-corner-marks">
-                  <span class="mark top-left"></span>
-                  <span class="mark top-right"></span>
-                  <span class="mark bottom-left"></span>
-                  <span class="mark bottom-right"></span>
-                </div>
-                <div class="post-card-header">
-                  <span>2026-08-11</span>
-                  <span>Fedora How-To</span>
-                </div>
-                <div class="post-card-title">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</div>
-                <p class="post-card-excerpt">A clean walkthrough for getting your GPU properly recognized on Fedora — RPM Fusion, akmod-nvidia, Secure Boot signing, and how to verify it actually worked.</p>
-                <div class="tag-row"><span class="tag">fedora</span><span class="tag">linux</span><span class="tag">nvidia</span><span class="tag">drivers</span></div>
+            <div class="wu-corner-card folder-card">
+              <div class="wu-corner-marks">
+                <span class="mark top-left"></span>
+                <span class="mark top-right"></span>
+                <span class="mark bottom-left"></span>
+                <span class="mark bottom-right"></span>
               </div>
-            </a>
+              <div class="folder-card-header">
+                <div class="folder-icon-wrapper">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                </div>
+                <span class="folder-post-count">1 post</span>
+              </div>
+              <h3 class="folder-card-title">Fedora Linux Guides</h3>
+              <p class="folder-card-excerpt">Step-by-step documentation for installing drivers, configuring settings, and optimizing performance on Fedora Workstation.</p>
+              <div class="folder-posts-section">
+                <div class="section-divider"></div>
+                <ul class="folder-posts-list">
+                  <li>
+                    <a href="./posts/fedora/fedora-gpu-drivers.html" class="folder-post-link">
+                      <span class="post-link-bullet">&bull;</span>
+                      <span class="post-link-title">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</span>
+                      <span class="post-link-date">2026-08-11</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </li>
   </ul>
 </main>

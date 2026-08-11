@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notes — kanishk.dev</title>
+<meta name="description" content="All notes and guides">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+<header class="shell-bar">
+  <div class="shell-bar-inner">
+    <a href="./index.html" class="shell-brand">
+      KANISHK.DEV
+    </a>
+    <div class="header-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <span>Search</span>
+      <kbd>Ctrl K</kbd>
+    </div>
+  </div>
+</header>
+<div class="doc-layout">
+  <aside class="doc-sidebar-left">
+    <div class="sidebar-group">
+      <div class="sidebar-title">Overview</div>
+      <ul class="sidebar-links">
+        <li><a href="./index.html">Home</a></li>
+        <li><a href="./notes.html" class="active">All Notes</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-group">
+        <div class="sidebar-title">Fedora Linux Guides</div>
+        <ul class="sidebar-links">
+          <li><a href="./posts/fedora/fedora-gpu-drivers.html">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</a></li>
+        </ul>
+      </div>
+  </aside>
+
+  <main class="doc-content">
+    <div class="breadcrumb"><a href="./index.html">Home</a> / Notes</div>
+    <h1>All Notes</h1>
+    <p style="color:var(--text-muted);margin-bottom:36px">Real-world guides on Linux, dev tools, system setup, and engineering workflows.</p>
+    <div>
+      <div class="notes-category-section" style="margin-bottom: 48px;">
+            <h2 class="category-section-title" style="font-size: 20px; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px; color: var(--cyan);">Fedora Linux Guides</h2>
+            <p style="color:var(--text-muted); font-size:13.5px; margin-bottom: 20px;">Step-by-step documentation for installing drivers, configuring settings, and optimizing performance on Fedora Workstation.</p>
+            <div class="notes-list" style="display:flex; flex-direction:column; gap:16px;">
+              <a href="./posts/fedora/fedora-gpu-drivers.html" class="note-row">
+                <div class="note-row-title">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</div>
+                <div class="note-row-meta">
+                  <span class="note-row-date">2026-08-11</span>
+                  <div class="tag-row"><span class="tag">fedora</span><span class="tag">linux</span><span class="tag">nvidia</span><span class="tag">drivers</span></div>
+                </div>
+                <p class="note-row-excerpt">A clean walkthrough for getting your GPU properly recognized on Fedora — RPM Fusion, akmod-nvidia, Secure Boot signing, and how to verify it actually worked.</p>
+              </a>
+            </div>
+          </div>
+    </div>
+  </main>
+
+  <aside class="doc-sidebar-right">
+    <div class="toc-title">On this page</div>
+    <ul class="toc-links">
+      <li><a href="#">All Notes</a></li>
+      <li><a href="./posts/fedora/fedora-gpu-drivers.html">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</a></li>
+    </ul>
+  </aside>
+</div>
+<footer class="shell-footer">
+  <span>nullptr.log &middot; Open source Linux Documentation &middot; Powered by Node.js & Markdown</span>
+</footer>
+</body>
+</html>

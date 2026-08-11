@@ -585,6 +585,94 @@ img { max-width: 100%; }
   letter-spacing: 0.02em;
 }
 
+
+/* ============================================
+   Folder Cards & Post Lists
+   ============================================ */
+.folder-card {
+  height: 100%;
+}
+.folder-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.folder-icon-wrapper {
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+}
+.folder-post-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+.folder-card-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+.folder-card-excerpt {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.folder-posts-section {
+  margin-top: auto;
+}
+.section-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 12px 0;
+}
+.folder-posts-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.folder-post-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  transition: color 0.15s var(--ease);
+}
+.folder-post-link:hover {
+  color: var(--cyan);
+  text-decoration: none;
+}
+.post-link-bullet {
+  color: var(--cyan);
+  opacity: 0.7;
+}
+.post-link-title {
+  flex: 1;
+  line-height: 1.4;
+}
+.post-link-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  margin-top: 2px;
+}
+.no-posts {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+  list-style: none;
+}
+
 /* ============================================
    Responsive
    ============================================ */
