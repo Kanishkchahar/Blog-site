@@ -3,7 +3,17 @@ const path = require('path');
 const matter = require('gray-matter');
 const MarkdownIt = require('markdown-it');
 
-const md = new MarkdownIt({ html: false, linkify: true, typographer: true });
+const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
+
+// Custom plugin to add id to headings and record TOC
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
+
 
 const ROOT = __dirname;
 const CONTENT_DIR = path.join(ROOT, 'content');
@@ -120,13 +130,23 @@ function readPosts() {
         const date = data.date || new Date().toISOString().split('T')[0];
         const excerpt = data.excerpt || (content.trim().replace(/^#+.*$/gm, '').slice(0, 140).trim() + '...');
 
+        // Extract headings for Table of Contents and inject IDs into headings
+        const headings = [];
+        const renderedHtml = md.render(content).replace(/<h([2-3])>(.*?)<\/h\1>/g, (match, level, text) => {
+          const cleanText = text.replace(/<[^>]+>/g, '').trim();
+          const id = slugify(cleanText);
+          headings.push({ level: parseInt(level), text: cleanText, id });
+          return `<h${level} id="${id}">${text}</h${level}>`;
+        });
+
         const post = {
           slug,
           title,
           date,
           tags: data.tags || [],
           excerpt,
-          html: md.render(content),
+          html: renderedHtml,
+          headings,
           folder: {
             slug: folderMeta.slug,
             title: folderMeta.title,
@@ -145,13 +165,22 @@ function readPosts() {
       const date = data.date || new Date().toISOString().split('T')[0];
       const excerpt = data.excerpt || (content.trim().replace(/^#+.*$/gm, '').slice(0, 140).trim() + '...');
 
+      const headings = [];
+      const renderedHtml = md.render(content).replace(/<h([2-3])>(.*?)<\/h\1>/g, (match, level, text) => {
+        const cleanText = text.replace(/<[^>]+>/g, '').trim();
+        const id = slugify(cleanText);
+        headings.push({ level: parseInt(level), text: cleanText, id });
+        return `<h${level} id="${id}">${text}</h${level}>`;
+      });
+
       const post = {
         slug,
         title,
         date,
         tags: data.tags || [],
         excerpt,
-        html: md.render(content),
+        html: renderedHtml,
+        headings,
         folder: {
           slug: folderMeta.slug,
           title: folderMeta.title,
@@ -216,7 +245,6 @@ function header(active, relPath = '.') {
     <nav class="shell-nav">
       ${nav(`${relPath}/index.html`, 'Home', 'home')}
       ${nav(`${relPath}/notes.html`, 'Notes', 'notes')}
-      ${nav(`${relPath}/about.html`, 'About', 'about')}
     </nav>
     <div class="header-search">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -227,21 +255,56 @@ function header(active, relPath = '.') {
 </header>`;
 }
 
-function footer() {
+function footer(relPath = '.') {
   return `<footer class="shell-footer">
   <span>nullptr.log &middot; Open source Linux Documentation &middot; Powered by Node.js & Markdown</span>
 </footer>
+
+<!-- Interactive Search Modal Overlay -->
+<div id="search-modal" class="search-modal-overlay" style="display:none;">
+  <div class="search-modal-container">
+    <div class="search-modal-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="search-input" placeholder="Search documentation, tags, topics..." autocomplete="off" />
+      <span class="search-modal-close">&times;</span>
+    </div>
+    <div id="search-results" class="search-results-list" data-relpath="${relPath}">
+      <div class="search-placeholder">Type to search notes and guides...</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>`;
 }
 
 // ---- page builders -----------------------------------------------------------
 function buildIndex(posts, folders) {
+  const totalPosts = posts.length;
+  const totalFolders = folders.length;
+  const recentPosts = posts.slice(0, 4);
+
+  const recentPostsCards = recentPosts.length > 0
+    ? recentPosts.map((p) => {
+        const tags = (p.tags || []).map((t) => `<span class="tag">${t}</span>`).join('');
+        return `
+        <a href="./posts/${p.folder.slug}/${p.slug}.html" class="recent-post-card">
+          <div class="recent-post-badge">
+            <span class="folder-title-badge">${p.folder.title}</span>
+            <span class="post-link-date">${isoDate(p.date)}</span>
+          </div>
+          <h3 class="recent-post-title">${p.title}</h3>
+          <p class="recent-post-excerpt">${p.excerpt}</p>
+          <div class="tag-row">${tags}</div>
+        </a>`;
+      }).join('\n')
+    : `<p style="color:var(--text-muted)">No posts published yet.</p>`;
+
   const folderCards = folders.length > 0
     ? folders
         .map((f) => {
           const postLinks = f.posts.length > 0
             ? f.posts
+                .slice(0, 3)
                 .map((p) => {
                   return `<li>
                     <a href="./posts/${f.slug}/${p.slug}.html" class="folder-post-link">
@@ -293,20 +356,36 @@ ${header('home')}
 <div class="hero-wrapper">
   <div class="hero-content">
     <div>
-      <div class="hero-subtitle">Notes for Engineers &amp; CS Students</div>
-      <h1 class="hero-title">Learn and fix things</h1>
-      <p class="hero-desc">Real-world guides on Linux, dev tools, system setup, and engineering workflows — straight from hands-on experience, no fluff.</p>
+      <div class="hero-subtitle">
+        <span class="live-dot"></span> Digital Garden &amp; Engineering Journal
+      </div>
+      <h1 class="hero-title">Linux, Code &amp; System Architecture</h1>
+      <p class="hero-desc">Real-world walkthroughs, driver configuration, terminal setups, and software engineering notes — organized cleanly in Markdown.</p>
+
+      <div class="hero-stats-bar">
+        <div class="stat-pill">
+          <span class="stat-num">${totalPosts}</span>
+          <span class="stat-label">Notes Published</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">${totalFolders}</span>
+          <span class="stat-label">Folders</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">100%</span>
+          <span class="stat-label">Static &amp; Fast</span>
+        </div>
+      </div>
       
       <div class="hero-actions">
-        <a href="./notes.html" class="btn-primary">Browse Notes &rarr;</a>
-        <a href="${SITE.repoUrl}" target="_blank" class="btn-secondary">View on GitHub &nearr;</a>
+        <a href="./notes.html" class="btn-primary">Browse All Notes &rarr;</a>
+        <a href="${SITE.repoUrl}" target="_blank" class="btn-secondary">GitHub Repository &nearr;</a>
       </div>
-      <div class="hero-footnote">Free. Open source. Written in Markdown. Built with Node.js.</div>
     </div>
 
     <div class="terminal-window">
       <div class="window-titlebar">
-        <span>fedora-setup.sh — bash</span>
+        <span>fedora-workstation ~ bash</span>
         <div class="window-controls">
           <span class="window-dot"></span>
           <span class="window-dot"></span>
@@ -315,22 +394,32 @@ ${header('home')}
       </div>
       <div class="window-body">
         <div><span class="terminal-prompt">[kanishk@fedora ~]$</span> <span class="terminal-cmd">cat /etc/fedora-release</span></div>
-        <div class="terminal-output">Fedora release 40 (Thirty-Nine / Workstation Edition)</div>
+        <div class="terminal-output">Fedora release 40 (Workstation Edition)</div>
+        <br>
+        <div><span class="terminal-prompt">[kanishk@fedora ~]$</span> <span class="terminal-cmd">git status</span></div>
+        <div class="terminal-output">On branch main</div>
+        <div class="terminal-output">Your branch is up to date with 'origin/main'.</div>
         <br>
         <div><span class="terminal-prompt">[kanishk@fedora ~]$</span> <span class="terminal-cmd">node build.js</span></div>
-        <div class="terminal-output">&#10004; Scanned content subdirectories</div>
-        <div class="terminal-output">&#10004; Generated category folders on index page</div>
-        <div class="terminal-output">&#10004; Ready for GitHub Pages deployment</div>
+        <div class="terminal-output">&#10004; Parsed Markdown files &amp; folder structure</div>
+        <div class="terminal-output">&#10004; Built static site &amp; search index</div>
       </div>
     </div>
   </div>
-
 </div>
 
 <main class="page" id="guides">
   <div class="section-header">
-    <h2>Knowledge Base Categories</h2>
-    <p>Select a category or jump straight to a guide below.</p>
+    <h2>Recent Notes &amp; Guides</h2>
+    <p>Latest articles and documentation updates.</p>
+  </div>
+  <div class="recent-posts-grid">
+    ${recentPostsCards}
+  </div>
+
+  <div class="section-header" style="margin-top: 60px;">
+    <h2>Content Folders</h2>
+    <p>Browse guides grouped by topic directory.</p>
   </div>
   <ul class="post-grid">
     ${folderCards}
@@ -365,6 +454,12 @@ function buildPost(post, folders) {
     })
     .join('\n');
 
+  const tocMarkup = post.headings && post.headings.length > 0
+    ? post.headings
+        .map((h) => `<li style="padding-left: ${(h.level - 2) * 12}px"><a href="#${h.id}">${h.text}</a></li>`)
+        .join('\n')
+    : `<li><a href="#">Overview</a></li>`;
+
   return `${head(`${post.title} — ${SITE.title}`, post.excerpt, relPath)}
 ${header('', relPath)}
 
@@ -378,11 +473,6 @@ ${header('', relPath)}
   <main class="doc-content">
     <div class="breadcrumb"><a href="${relPath}/index.html">Documentation</a> / <a href="${relPath}/notes.html">${post.folder.title}</a> / ${post.slug}.md</div>
     <h1>${post.title}</h1>
-    
-    <div class="callout">
-      <div class="callout-title">&#9888; Note</div>
-      <div class="callout-body">Tested on Fedora 40 Workstation Edition. Keep your system updated via <code>sudo dnf upgrade</code> before applying kernel and driver tweaks.</div>
-    </div>
 
     <article class="post-body">
       ${post.html}
@@ -394,14 +484,11 @@ ${header('', relPath)}
   <aside class="doc-sidebar-right">
     <div class="toc-title">On this page</div>
     <ul class="toc-links">
-      <li><a href="#">Overview</a></li>
-      <li><a href="#">Installation Steps</a></li>
-      <li><a href="#">Verification & Status</a></li>
+      ${tocMarkup}
     </ul>
   </aside>
 </div>
-
-${footer()}`;
+${footer(relPath)}`;
 }
 
 function buildNotes(posts, folders) {
@@ -486,84 +573,6 @@ ${header('notes')}
       ${posts.map((p) => `<li><a href="./posts/${p.folder.slug}/${p.slug}.html">${p.title}</a></li>`).join('\n      ')}
     </ul>
   </aside>
-</div>
-${footer()}`;
-}
-
-function buildAbout() {
-  return `${head(`About — ${SITE.title}`, 'About this blog')}
-${header('about')}
-<main class="page">
-  <div class="about-container">
-    <div class="breadcrumb"><a href="./index.html">Home</a> / About</div>
-
-    <!-- Profile Card -->
-    <div class="about-profile-card">
-      <div class="about-avatar">K</div>
-      <div class="about-profile-info">
-        <h2>Kanishk Chahar</h2>
-        <div class="about-profile-handle">@kanishkchahar &middot; kanishk.dev</div>
-        <p class="about-profile-bio">
-          Engineering notes, hardware walkthroughs, and Linux Workstation documentation. 
-          Building minimal, high-performance static tools with zero runtime dependencies.
-        </p>
-        <div class="hero-actions" style="margin-top: 12px;">
-          <a href="https://github.com/Kanishkchahar/Blog-site" target="_blank" class="btn-secondary" style="padding: 6px 14px; font-size: 13px;">View GitHub &nearr;</a>
-          <a href="./notes.html" class="btn-primary" style="padding: 6px 14px; font-size: 13px;">Browse All Notes &rarr;</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2 Column Grid -->
-    <div class="about-grid">
-      <!-- Left: Specs & Environment -->
-      <div class="about-card">
-        <div class="about-card-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 16V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8m16 0H4m16 0l1.28 2.55A1 1 0 0 1 20.38 20H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
-          Environment &amp; Stack
-        </div>
-        <ul class="spec-list">
-          <li class="spec-item"><span class="spec-label">Primary OS</span><span class="spec-val">Fedora Linux Workstation</span></li>
-          <li class="spec-item"><span class="spec-label">Shell &amp; Terminal</span><span class="spec-val">Bash / GNOME Terminal</span></li>
-          <li class="spec-item"><span class="spec-label">Site Generator</span><span class="spec-val">Custom Node.js SSG</span></li>
-          <li class="spec-item"><span class="spec-label">Markdown Parser</span><span class="spec-val">gray-matter + markdown-it</span></li>
-          <li class="spec-item"><span class="spec-label">Styling Engine</span><span class="spec-val">Vanilla CSS (Zero Tailwind)</span></li>
-          <li class="spec-item"><span class="spec-label">Hosting Platform</span><span class="spec-val">GitHub Pages</span></li>
-        </ul>
-      </div>
-
-      <!-- Right: Site Mission & Architecture -->
-      <div class="about-card">
-        <div class="about-card-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-          Blog Philosophy
-        </div>
-        <ul class="feature-list">
-          <li class="feature-item">
-            <span class="feature-icon">&#10004;</span>
-            <div><strong>Practical &amp; Verified:</strong> Step-by-step guides tested on actual hardware and real Linux installations.</div>
-          </li>
-          <li class="feature-item">
-            <span class="feature-icon">&#10004;</span>
-            <div><strong>Folder Categories:</strong> Auto-grouped markdown articles indexed by directory subfolders &amp; metadata.</div>
-          </li>
-          <li class="feature-item">
-            <span class="feature-icon">&#10004;</span>
-            <div><strong>Zero Bloat:</strong> Blazing-fast static HTML loaded with zero client-side JavaScript frameworks.</div>
-          </li>
-        </ul>
-        <div class="tech-stack-row">
-          <span class="tag">Linux</span>
-          <span class="tag">Fedora</span>
-          <span class="tag">Node.js</span>
-          <span class="tag">Markdown</span>
-          <span class="tag">JavaScript</span>
-          <span class="tag">CSS3</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</main>
 ${footer()}`;
 }
 
@@ -630,7 +639,7 @@ ${header('notes', relPath)}
     </ul>
   </aside>
 </div>
-${footer()}`;
+${footer(relPath)}`;
 }
 
 // ---- run ---------------------------------------------------------------------
@@ -648,7 +657,6 @@ function build() {
   const { posts, folders } = readPosts();
 
   fs.writeFileSync(path.join(SITE_DIR, 'index.html'), buildIndex(posts, folders));
-  fs.writeFileSync(path.join(SITE_DIR, 'about.html'), buildAbout());
   fs.writeFileSync(path.join(SITE_DIR, 'notes.html'), buildNotes(posts, folders));
 
   for (const folder of folders) {
@@ -666,6 +674,18 @@ function build() {
       );
     }
   }
+
+  // Generate search index JSON for fast client-side searching
+  const searchIndex = posts.map((p) => ({
+    title: p.title,
+    slug: p.slug,
+    excerpt: p.excerpt,
+    folder: p.folder,
+    url: `./posts/${p.folder.slug}/${p.slug}.html`,
+    date: isoDate(p.date),
+    tags: p.tags
+  }));
+  fs.writeFileSync(path.join(SITE_DIR, 'assets', 'search-index.json'), JSON.stringify(searchIndex));
 
   console.log(`Built ${posts.length} post(s) into ${SITE_DIR}`);
 }

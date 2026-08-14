@@ -1,87 +1,75 @@
-# nullptr.log — blog starter
+# kanishk.dev — Static Markdown Blog & Digital Garden
 
-A tiny static blog: write posts in Markdown, run one command, get a styled
-site with comments. No framework, no server to run, free to host.
+A zero-bloat, high-performance static blog generator built with Node.js and Vanilla CSS. Write your posts in Markdown, organize them using folder directories, save media assets in a dedicated `images/` directory, and deploy automatically to GitHub Pages.
 
-## How it's structured
+---
+
+## 📁 Repository Structure
 
 ```
-content/            # your posts, one .md file each
-site-assets/         # style.css + script.js (copied into every build)
-build.js             # the generator — reads content/, writes site/
-site/                 # generated output — this is what you deploy (don't hand-edit it)
+.
+├── content/              # Your Markdown posts (.md files grouped into topic subfolders)
+│   ├── fedora/           # e.g., content/fedora/fedora-gpu-drivers.md
+│   └── web-dev/          # e.g., content/web-dev/setup-vite-app.md
+├── images/               # Media attachments (PNG, JPG, SVG, WebP, etc.)
+├── site-assets/          # Core CSS styling & JavaScript client interactions
+│   ├── style.css         # Custom Dark UI styling (Zero Tailwind)
+│   └── script.js         # Client-side search modal, code copy buttons, sidebar toggles
+├── .github/workflows/    # Automated GitHub Actions deployment pipeline
+│   └── deploy.yml        # Automatically builds and publishes site/ to GitHub Pages
+├── build.js              # Custom Node.js Static Site Generator (SSG)
+├── up.sh                 # Local build & preview bash script (http://localhost:8000)
+└── site/                 # Generated static website output (published to GitHub Pages)
 ```
 
-## Writing a new post
+---
 
-1. Add a file to `content/`, e.g. `content/my-new-post.md`
-2. Give it front matter at the top:
+## ⚡ Features & Workflow
+
+- **Markdown-Based Writing**: Write articles using standard `.md` syntax with front matter support (`title`, `date`, `tags`, `excerpt`).
+- **Separate Images Directory**: Keep raw media out of view; images in `images/` are automatically copied to the build destination and linked seamlessly.
+- **Folder Directories**: Subfolders under `content/` automatically create category cards on the landing page and navigation groups in the sidebar.
+- **Instant Search (`Ctrl + K`)**: Modal search indexing all titles, excerpts, tags, and topics in real time.
+- **Obsidian-Style Reader View**: Dynamic Table of Contents (TOC), heading anchor IDs, and hoverable code copy buttons.
+- **Automated Deployments**: Powered by GitHub Actions (`deploy.yml`). Pushing changes to `main` automatically updates your live site on GitHub Pages.
+
+---
+
+## ✍️ Writing a New Post
+
+1. **Add attachments**: Place any images or screenshots in the `images/` directory.
+2. **Create a `.md` file**: Add your file into `content/` (or a topic subfolder like `content/fedora/my-guide.md`):
 
    ```markdown
    ---
-   title: My New Post
-   date: 2026-08-20
-   tags: [linux, fedora]
-   excerpt: One sentence describing the post for the homepage listing.
+   title: My Guide Title
+   date: 2026-08-14
+   tags: [linux, fedora, guide]
+   excerpt: A short preview description for the landing page card.
    ---
 
+   ## Introduction
+
    Your Markdown content starts here.
+
+   ![Demo Image](/images/my-screenshot.png)
    ```
 
-3. Rebuild:
-
+3. **Build & Preview Locally**:
    ```bash
-   node build.js
+   ./up.sh
+   # Opens static site server on http://localhost:8000
    ```
 
-4. Preview locally before pushing:
+---
 
+## 🚀 Deploying to GitHub Pages
+
+1. Push your changes to GitHub:
    ```bash
-   cd site && python3 -m http.server 8000
-   # open http://localhost:8000
+   git add .
+   git commit -m "Add new blog post"
+   git push origin main
    ```
-
-The filename (minus `.md`) becomes the URL slug — `content/my-new-post.md` →
-`/posts/my-new-post.html`.
-
-## Deploying to GitHub Pages (free)
-
-1. Create a new GitHub repo (public — Pages on the free tier needs a public
-   repo, or GitHub Pro for private).
-2. Push this whole project to it.
-3. In the repo, go to **Settings → Pages**, and set the source to deploy
-   from the `site/` folder on your main branch (or set up a small GitHub
-   Action that runs `node build.js` and publishes `site/` — either works,
-   the Action is nicer since you never forget to rebuild before pushing).
-4. Your blog will be live at `https://your-username.github.io/your-repo/`.
-
-If you want the site at the repo root instead of a subpath, name the repo
-`your-username.github.io` — GitHub treats that repo specially and serves it
-at the domain root.
-
-## Turning on comments (Giscus)
-
-Comments are wired up but pointed at placeholder values until you connect
-them to your own repo:
-
-1. Make sure the GitHub repo you deployed to is **public**, and that the
-   **Discussions** feature is turned on for it (Settings → General →
-   Features → Discussions).
-2. Go to **https://giscus.app**, enter your repo name, and it'll generate
-   a config for you (it checks the repo is set up correctly as you go).
-3. Copy the four values it gives you — `data-repo-id`, `data-category`,
-   `data-category-id`, and confirm the repo name — into the `SITE.giscus`
-   object near the top of `build.js`.
-4. Rebuild (`node build.js`) and redeploy. Comments will now show up at
-   the bottom of every post, threaded through GitHub Discussions.
-
-Visitors need a GitHub account to comment — no account, no separate
-database, no spam form to moderate.
-
-## Customizing
-
-- Site title / tagline: top of `build.js`, in the `SITE` object.
-- Colors, type, spacing: `site-assets/style.css` (all tokens are CSS
-  variables at the top of the file).
-- Homepage hero copy: the `terminal-sub` line inside `buildIndex()` in
-  `build.js`.
+2. Go to your GitHub repository **Settings** → **Pages** → set **Source** to **GitHub Actions**.
+3. Your site will automatically build and publish live to `https://<your-username>.github.io/<repo-name>/`.
