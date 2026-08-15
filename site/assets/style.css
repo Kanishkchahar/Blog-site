@@ -1882,7 +1882,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .obs-vault-header, .obs-controls-bar { padding-left: clamp(24px, 4vw, 64px); padding-right: clamp(24px, 4vw, 64px); }
 .obs-vault-header { background: linear-gradient(115deg, rgba(18, 32, 52, .92), rgba(12, 18, 29, .75)); }
 .obs-content-area { max-width: 1380px; padding-left: clamp(24px, 4vw, 64px); padding-right: clamp(24px, 4vw, 64px); }
-.doc-content { max-width: 910px; padding: 62px clamp(28px, 5vw, 74px); }
+.doc-content { max-width: 910px; margin: 0 auto; padding: 62px clamp(28px, 5vw, 74px); }
 .doc-content h1 { font-size: clamp(34px, 4vw, 50px); }.doc-content h2 { font-size: 28px; }
 .doc-sidebar-right { background: rgba(8, 13, 22, .52); }
 
