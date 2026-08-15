@@ -5,16 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide — kanishk.dev</title>
 <meta name="description" content="Complete guide to installing DaVinci Resolve Studio 21 on Fedora, applying the license bypass patch, fixing bundled library conflicts, and configuring NVIDIA GPU support under Wayland and X11.">
-<meta name="theme-color" content="#090d16">
+<meta name="theme-color" content="#0C0D0E">
 <link rel="icon" type="image/svg+xml" href="../../images/favicon.svg?v=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/geist" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/geist-mono" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/style.css">
 </head>
 <body>
+<a href="#article-content" class="skip-link">Skip to content</a>
 <script src="../../assets/script.js" defer></script>
 <header class="shell-bar">
   <div class="shell-bar-inner">
@@ -48,18 +46,18 @@
     <div class="obs-sidebar-inner">
       <div class="builder-sidebar-brand">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
-        <span>Notes Vault</span>
+        <span>Notes</span>
       </div>
 
       <div class="builder-nav-section">
         <a href="../../notes.html" class="builder-nav-item">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span>All Guides</span>
+          <span>All notes</span>
         </a>
       </div>
 
       <div class="builder-nav-header">
-        <span>Directories</span>
+        <span>Topics</span>
       </div>
 
       <nav class="obs-file-tree" id="obs-file-tree">
@@ -84,30 +82,24 @@
       <div class="obs-sidebar-footer">
         <span class="obs-sidebar-stat">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-          1 guides
-        </span>
-        <span class="obs-sidebar-stat">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          1 categories
+          1 note
         </span>
       </div>
     </div>
   </aside>
 
   <!-- Central Documentation Content -->
-  <main class="doc-content">
-    <div class="breadcrumb"><a href="../../index.html">Home</a> / <a href="../../notes.html">Notes</a> / <a href="../../posts/davinci-resolve-studio/index.html">DaVinci Resolve on Fedora</a> / davinci-resolve-studio-crack-in-fedora.md</div>
+  <main class="doc-content" id="article-content">
+    <div class="breadcrumb"><a href="../../index.html">Home</a> / <a href="../../notes.html">Notes</a> / <a href="../../posts/davinci-resolve-studio/index.html">DaVinci Resolve on Fedora</a></div>
     <h1 class="post-page-title">DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide</h1>
     
     <div class="post-meta-header">
       <div class="meta-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Aug 15, 2026</div>
+      <span aria-hidden="true">&middot;</span>
       <div class="meta-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 4 min read</div>
+      <span aria-hidden="true">&middot;</span>
       <div class="meta-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> DaVinci Resolve on Fedora</div>
-      <button class="btn-share-link" id="share-btn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg> Share Link
-      </button>
     </div>
-    <div class="tag-row" style="margin-bottom:28px"><span class="tag">fedora</span><span class="tag">linux</span><span class="tag">davinci-resolve</span><span class="tag">nvidia</span><span class="tag">gpu</span></div>
 
     <article class="post-body">
       <p>A complete step-by-step guide for installing DaVinci Resolve Studio 21 on Fedora/RHEL-based Linux distributions (<code>dnf</code>), applying the license bypass patch, resolving bundled system library conflicts, and setting up persistent NVIDIA GPU support.</p>
@@ -224,6 +216,16 @@ export __GLX_VENDOR_LIBRARY_NAME=nvidia
 </table>
 
     </article>
+
+    <div class="article-end-row">
+      <a href="../../notes.html">&larr; Back to notes</a>
+      <a href="../../posts/davinci-resolve-studio/index.html">&larr; DaVinci Resolve on Fedora</a>
+      <a href="https://github.com/Kanishkchahar/Blog-site/issues" target="_blank" rel="noreferrer">Report an issue</a>
+      <button class="btn-share-link" id="share-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+        Copy link
+      </button>
+    </div>
 
     <div class="post-pagination-nav">
       <div></div>

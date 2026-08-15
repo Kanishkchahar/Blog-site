@@ -270,7 +270,7 @@ function isoDate(d) {
 }
 
 // ---- shared partials --------------------------------------------------------
-function head(title, description, relPath = '.') {
+function head(title, description, relPath = '.', skipId = 'main-content') {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -278,17 +278,15 @@ function head(title, description, relPath = '.') {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <meta name="description" content="${description}">
-<meta name="theme-color" content="#090d16">
+<meta name="theme-color" content="#0C0D0E">
 <link rel="icon" type="image/svg+xml" href="${relPath}/images/favicon.svg?v=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/geist" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/geist-mono" rel="stylesheet">
 <link rel="stylesheet" href="${relPath}/assets/style.css">
 </head>
 <body>
-<script src="${relPath}/assets/script.js" defer><\/script>`;
+<a href="#${skipId}" class="skip-link">Skip to content</a>
+<script src="${relPath}/assets/script.js" defer></script>`;
 }
 
 function header(activeTab = '', relPath = '.') {
@@ -397,7 +395,7 @@ function buildIndex(posts, folders) {
             : `<li class="no-posts">No guides in this category yet</li>`;
 
           return `
-            <div class="folder-card" onclick="if(!event.target.closest('a')){window.location.href='./posts/${f.slug}/index.html'}">
+            <a href="./posts/${f.slug}/index.html" class="folder-card">
               <div class="folder-card-header">
                 <div class="folder-title-wrapper">
                   <div class="folder-icon-wrapper">
@@ -405,7 +403,7 @@ function buildIndex(posts, folders) {
                   </div>
                   <h3 class="folder-card-title">${f.title}</h3>
                 </div>
-                <span class="folder-post-count">${f.posts.length} ${f.posts.length === 1 ? 'guide' : 'guides'}</span>
+                <span class="folder-post-count">${f.posts.length} ${f.posts.length === 1 ? 'note' : 'notes'}</span>
               </div>
               <p class="folder-card-excerpt">${f.description}</p>
               <div class="folder-posts-section">
@@ -415,34 +413,30 @@ function buildIndex(posts, folders) {
                 </ul>
               </div>
               <div class="folder-card-footer">
-                <a href="./posts/${f.slug}/index.html" class="view-folder-link">Explore directory &rarr;</a>
+                <span class="view-folder-link">View topic &rarr;</span>
               </div>
-            </div>`;
+            </a>`;
         })
         .join('\n')
     : `<div class="wu-corner-card" style="grid-column: 1 / -1; text-align: center;">
-        <div class="post-card-title" style="color: var(--text-muted);">No documentation categories found</div>
-        <p class="post-card-excerpt">Add subfolders and <code>.md</code> files into <code>content/</code> and run <code>node build.js</code> to generate your category boxes.</p>
+        <div class="post-card-title" style="color: var(--text-muted);">No documentation topics found</div>
+        <p class="post-card-excerpt">Add subfolders and <code>.md</code> files into <code>content/</code> and run <code>node build.js</code> to generate your topic boxes.</p>
        </div>`;
 
-  return `${head(SITE.title, SITE.tagline)}
+  return `${head(SITE.title, SITE.tagline, '.', 'main-content')}
 ${header('home')}
 
 <div class="hero-wrapper">
   <div class="hero-inner">
     <div class="hero-left">
-      <div class="hero-eyebrow">KANISHK.DEV / NOTES</div>
-      <h1 class="hero-title">Linux, tooling, and<br><em>implementation notes.</em></h1>
-      <p class="hero-desc">Practical references for setting up systems, debugging rough edges, and keeping useful commands close at hand.</p>
+      <div class="hero-eyebrow">kanishk.dev</div>
+      <h1 class="hero-title">Linux notes from my<br>real setups.</h1>
+      <p class="hero-desc">Practical notes I keep for myself and share when useful — setup guides, fixes, and commands that actually worked.</p>
       
-      <button class="hero-search-bar header-search" type="button" aria-label="Search guides">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <span class="hero-search-text">Search ${totalPosts} guides, topics, and code snippets...</span>
-        <kbd>Ctrl K</kbd>
-      </button>
+      <a href="./notes.html" class="hero-cta">Browse notes &rarr;</a>
 
       <div class="hero-chips-row">
-        <span class="hero-chips-label">Directories:</span>
+        <span class="hero-chips-label">Topics:</span>
         <div class="hero-chips-list">
           ${folderPills}
         </div>
@@ -451,13 +445,13 @@ ${header('home')}
   </div>
 </div>
 
-<main class="page" id="guides">
+<main class="page" id="main-content">
   <div class="section-header">
     <div class="section-header-left">
       <h2>Latest notes</h2>
-      <p>Recently added guides and implementation references.</p>
+      <p>Recently added.</p>
     </div>
-    <a href="./notes.html" class="section-link">View Notes Vault &rarr;</a>
+    <a href="./notes.html" class="section-link">All notes &rarr;</a>
   </div>
   <div class="recent-posts-grid">
     ${recentPostsCards}
@@ -465,13 +459,12 @@ ${header('home')}
 
   <div class="section-header" style="margin-top: 64px;">
     <div class="section-header-left">
-      <h2>Directories</h2>
-      <p>Guides organized by subject.</p>
+      <h2>Topics</h2>
+      <p>Notes organized by subject.</p>
     </div>
   </div>
   <div class="post-grid">
     ${folderCards}
-  </div>
 </main>
 ${footer()}`;
 }
@@ -516,18 +509,18 @@ function renderVaultSidebar({ posts, folders, currentPost = null, currentFolder 
     <div class="obs-sidebar-inner">
       <div class="builder-sidebar-brand">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
-        <span>Notes Vault</span>
+        <span>Notes</span>
       </div>
 
       <div class="builder-nav-section">
         <a href="${relPath}/notes.html" class="builder-nav-item${isAllGuidesActive ? ' active' : ''}">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span>All Guides</span>
+          <span>All notes</span>
         </a>
       </div>
 
       <div class="builder-nav-header">
-        <span>Directories</span>
+        <span>Topics</span>
       </div>
 
       <nav class="obs-file-tree" id="obs-file-tree">
@@ -537,11 +530,7 @@ function renderVaultSidebar({ posts, folders, currentPost = null, currentFolder 
       <div class="obs-sidebar-footer">
         <span class="obs-sidebar-stat">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-          ${posts.length} guides
-        </span>
-        <span class="obs-sidebar-stat">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          ${folders.length} categories
+          ${posts.length} ${posts.length === 1 ? 'note' : 'notes'}
         </span>
       </div>
     </div>
@@ -576,7 +565,7 @@ function buildPost(post, folders, allPosts) {
         .join('\n')
     : `<li><a href="#">Overview</a></li>`;
 
-  return `${head(`${post.title} — ${SITE.title}`, post.excerpt, relPath)}
+  return `${head(`${post.title} — ${SITE.title}`, post.excerpt, relPath, 'article-content')}
 ${header('notes', relPath)}
 
 <div class="doc-layout">
@@ -584,23 +573,31 @@ ${header('notes', relPath)}
   ${renderVaultSidebar({ posts: allPosts, folders, currentPost: post, relPath })}
 
   <!-- Central Documentation Content -->
-  <main class="doc-content">
-    <div class="breadcrumb"><a href="${relPath}/index.html">Home</a> / <a href="${relPath}/notes.html">Notes</a> / <a href="${relPath}/posts/${post.folder.slug}/index.html">${post.folder.title}</a> / ${post.slug}.md</div>
+  <main class="doc-content" id="article-content">
+    <div class="breadcrumb"><a href="${relPath}/index.html">Home</a> / <a href="${relPath}/notes.html">Notes</a> / <a href="${relPath}/posts/${post.folder.slug}/index.html">${post.folder.title}</a></div>
     <h1 class="post-page-title">${post.title}</h1>
     
     <div class="post-meta-header">
       <div class="meta-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${fmtDate(post.date)}</div>
+      <span aria-hidden="true">&middot;</span>
       <div class="meta-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${post.readingTime} min read</div>
+      <span aria-hidden="true">&middot;</span>
       <div class="meta-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> ${post.folder.title}</div>
-      <button class="btn-share-link" id="share-btn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg> Share Link
-      </button>
     </div>
-    ${post.tags && post.tags.length > 0 ? `<div class="tag-row" style="margin-bottom:28px">${post.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
 
     <article class="post-body">
       ${post.html.replace(/src="\/images\//g, `src="${relPath}/images/`).replace(/src="\.\/images\//g, `src="${relPath}/images/`)}
     </article>
+
+    <div class="article-end-row">
+      <a href="${relPath}/notes.html">&larr; Back to notes</a>
+      <a href="${relPath}/posts/${post.folder.slug}/index.html">&larr; ${post.folder.title}</a>
+      <a href="${SITE.repoUrl}/issues" target="_blank" rel="noreferrer">Report an issue</a>
+      <button class="btn-share-link" id="share-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+        Copy link
+      </button>
+    </div>
 
     <div class="post-pagination-nav">
       ${prevCard}
@@ -625,14 +622,6 @@ ${footer(relPath)}`;
 }
 
 function buildNotes(posts, folders) {
-  // Extract all unique tags across posts
-  const allTagsSet = new Set();
-  posts.forEach(p => (p.tags || []).forEach(t => allTagsSet.add(t)));
-  const allTags = Array.from(allTagsSet);
-
-  const tagPills = allTags.map(t => `<button class="obs-filter-pill" data-tag="${t}">${t}</button>`).join('');
-
-  // ---- Main notes cards list ----
   const obsFileRows = folders.length > 0
     ? folders.map((f) => {
         if (f.posts.length === 0) return '';
@@ -657,7 +646,7 @@ function buildNotes(posts, folders) {
           <div class="obs-folder-section-header">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
             <span class="obs-folder-section-name">${f.title}</span>
-            <span class="obs-folder-section-count">${f.posts.length} ${f.posts.length === 1 ? 'guide' : 'guides'}</span>
+            <span class="obs-folder-section-count">${f.posts.length} ${f.posts.length === 1 ? 'note' : 'notes'}</span>
           </div>
           <div class="obs-notes-list">${rows}</div>
         </div>`;
@@ -667,7 +656,7 @@ function buildNotes(posts, folders) {
         <p>No notes yet. Add <code>.md</code> files in subdirectories under <code>content/</code> and run <code>node build.js</code>.</p>
       </div>`;
 
-  return `${head(`Notes — ${SITE.title}`, 'All notes and guides')}
+  return `${head(`Notes — ${SITE.title}`, 'All notes and guides', '.', 'main-notes')}
 ${header('notes')}
 
 <div class="obs-layout">
@@ -676,16 +665,16 @@ ${header('notes')}
   ${renderVaultSidebar({ posts, folders, relPath: '.' })}
 
   <!-- Main content area -->
-  <main class="obs-main">
+  <main class="obs-main" id="main-notes">
 
     <!-- Clean Header Banner -->
     <div class="obs-vault-header">
       <div class="obs-vault-header-inner">
         <div class="obs-vault-title-row">
           <h1 class="obs-vault-title">Notes</h1>
-          <span class="obs-vault-badge">${posts.length} ${posts.length === 1 ? 'guide' : 'guides'}</span>
+          <span class="obs-vault-badge">${posts.length} ${posts.length === 1 ? 'note' : 'notes'}</span>
         </div>
-        <p class="obs-vault-desc">Search, filter by topic, or browse by category.</p>
+        <p class="obs-vault-desc">Filter by title, tag, or topic to find what you need.</p>
       </div>
     </div>
 
@@ -694,7 +683,7 @@ ${header('notes')}
       <div class="obs-controls-inner">
         <div class="obs-inline-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" id="obs-quick-search" placeholder="Search notes by title, tag, or content..." autocomplete="off" />
+          <input type="text" id="obs-quick-search" placeholder="Filter this list by title, tag, or content..." autocomplete="off" />
           <button id="obs-search-clear" class="obs-search-clear-btn" aria-label="Clear search" style="display:none;">&times;</button>
         </div>
       </div>
@@ -707,6 +696,7 @@ ${header('notes')}
         <div id="obs-no-results" class="obs-empty-search" style="display: none;">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <p>No notes matched your search or filter.</p>
+          <button class="clear-filter-btn" onclick="document.getElementById('obs-quick-search').value=''; document.getElementById('obs-quick-search').dispatchEvent(new Event('input'));">Clear filter</button>
         </div>
       </div>
     </div>
@@ -737,13 +727,13 @@ function buildCategory(folder, folders, allPosts) {
     .map((p) => `<li><a href="${relPath}/posts/${folder.slug}/${p.slug}.html">${p.title}</a></li>`)
     .join('\n');
 
-  return `${head(`${folder.title} — ${SITE.title}`, folder.description, relPath)}
+  return `${head(`${folder.title} — ${SITE.title}`, folder.description, relPath, 'category-content')}
 ${header('notes', relPath)}
 <div class="doc-layout">
   <!-- Left Navigation Sidebar -->
   ${renderVaultSidebar({ posts: allPosts, folders, currentFolder: folder, relPath })}
 
-  <main class="doc-content">
+  <main class="doc-content" id="category-content">
     <div class="breadcrumb"><a href="${relPath}/index.html">Home</a> / <a href="${relPath}/notes.html">Notes</a> / ${folder.title}</div>
     <h1>${folder.title}</h1>
     <p style="color:var(--text-muted);margin-bottom:36px">${folder.description}</p>

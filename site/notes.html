@@ -5,16 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Notes — kanishk.dev</title>
 <meta name="description" content="All notes and guides">
-<meta name="theme-color" content="#090d16">
+<meta name="theme-color" content="#0C0D0E">
 <link rel="icon" type="image/svg+xml" href="./images/favicon.svg?v=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/geist" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/geist-mono" rel="stylesheet">
 <link rel="stylesheet" href="./assets/style.css">
 </head>
 <body>
+<a href="#main-notes" class="skip-link">Skip to content</a>
 <script src="./assets/script.js" defer></script>
 <header class="shell-bar">
   <div class="shell-bar-inner">
@@ -49,18 +47,18 @@
     <div class="obs-sidebar-inner">
       <div class="builder-sidebar-brand">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
-        <span>Notes Vault</span>
+        <span>Notes</span>
       </div>
 
       <div class="builder-nav-section">
         <a href="./notes.html" class="builder-nav-item active">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span>All Guides</span>
+          <span>All notes</span>
         </a>
       </div>
 
       <div class="builder-nav-header">
-        <span>Directories</span>
+        <span>Topics</span>
       </div>
 
       <nav class="obs-file-tree" id="obs-file-tree">
@@ -85,27 +83,23 @@
       <div class="obs-sidebar-footer">
         <span class="obs-sidebar-stat">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-          1 guides
-        </span>
-        <span class="obs-sidebar-stat">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          1 categories
+          1 note
         </span>
       </div>
     </div>
   </aside>
 
   <!-- Main content area -->
-  <main class="obs-main">
+  <main class="obs-main" id="main-notes">
 
     <!-- Clean Header Banner -->
     <div class="obs-vault-header">
       <div class="obs-vault-header-inner">
         <div class="obs-vault-title-row">
           <h1 class="obs-vault-title">Notes</h1>
-          <span class="obs-vault-badge">1 guide</span>
+          <span class="obs-vault-badge">1 note</span>
         </div>
-        <p class="obs-vault-desc">Search, filter by topic, or browse by category.</p>
+        <p class="obs-vault-desc">Filter by title, tag, or topic to find what you need.</p>
       </div>
     </div>
 
@@ -114,7 +108,7 @@
       <div class="obs-controls-inner">
         <div class="obs-inline-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" id="obs-quick-search" placeholder="Search notes by title, tag, or content..." autocomplete="off" />
+          <input type="text" id="obs-quick-search" placeholder="Filter this list by title, tag, or content..." autocomplete="off" />
           <button id="obs-search-clear" class="obs-search-clear-btn" aria-label="Clear search" style="display:none;">&times;</button>
         </div>
       </div>
@@ -128,7 +122,7 @@
           <div class="obs-folder-section-header">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
             <span class="obs-folder-section-name">DaVinci Resolve on Fedora</span>
-            <span class="obs-folder-section-count">1 guide</span>
+            <span class="obs-folder-section-count">1 note</span>
           </div>
           <div class="obs-notes-list">
           <a href="./posts/davinci-resolve-studio/davinci-resolve-studio-crack-in-fedora.html" class="obs-note-row" data-tags="fedora,linux,davinci-resolve,nvidia,gpu">
@@ -147,6 +141,7 @@
         <div id="obs-no-results" class="obs-empty-search" style="display: none;">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <p>No notes matched your search or filter.</p>
+          <button class="clear-filter-btn" onclick="document.getElementById('obs-quick-search').value=''; document.getElementById('obs-quick-search').dispatchEvent(new Event('input'));">Clear filter</button>
         </div>
       </div>
     </div>

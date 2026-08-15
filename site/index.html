@@ -5,16 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>kanishk.dev</title>
 <meta name="description" content="notes from a Linux box that mostly works">
-<meta name="theme-color" content="#090d16">
+<meta name="theme-color" content="#0C0D0E">
 <link rel="icon" type="image/svg+xml" href="./images/favicon.svg?v=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/geist" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/geist-mono" rel="stylesheet">
 <link rel="stylesheet" href="./assets/style.css">
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to content</a>
 <script src="./assets/script.js" defer></script>
 <header class="shell-bar">
   <div class="shell-bar-inner">
@@ -44,18 +42,14 @@
 <div class="hero-wrapper">
   <div class="hero-inner">
     <div class="hero-left">
-      <div class="hero-eyebrow">KANISHK.DEV / NOTES</div>
-      <h1 class="hero-title">Linux, tooling, and<br><em>implementation notes.</em></h1>
-      <p class="hero-desc">Practical references for setting up systems, debugging rough edges, and keeping useful commands close at hand.</p>
+      <div class="hero-eyebrow">kanishk.dev</div>
+      <h1 class="hero-title">Linux notes from my<br>real setups.</h1>
+      <p class="hero-desc">Practical notes I keep for myself and share when useful — setup guides, fixes, and commands that actually worked.</p>
       
-      <button class="hero-search-bar header-search" type="button" aria-label="Search guides">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <span class="hero-search-text">Search 1 guides, topics, and code snippets...</span>
-        <kbd>Ctrl K</kbd>
-      </button>
+      <a href="./notes.html" class="hero-cta">Browse notes &rarr;</a>
 
       <div class="hero-chips-row">
-        <span class="hero-chips-label">Directories:</span>
+        <span class="hero-chips-label">Topics:</span>
         <div class="hero-chips-list">
           <a href="./posts/davinci-resolve-studio/index.html" class="hero-category-chip">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -68,13 +62,13 @@
   </div>
 </div>
 
-<main class="page" id="guides">
+<main class="page" id="main-content">
   <div class="section-header">
     <div class="section-header-left">
       <h2>Latest notes</h2>
-      <p>Recently added guides and implementation references.</p>
+      <p>Recently added.</p>
     </div>
-    <a href="./notes.html" class="section-link">View Notes Vault &rarr;</a>
+    <a href="./notes.html" class="section-link">All notes &rarr;</a>
   </div>
   <div class="recent-posts-grid">
     
@@ -94,13 +88,13 @@
 
   <div class="section-header" style="margin-top: 64px;">
     <div class="section-header-left">
-      <h2>Directories</h2>
-      <p>Guides organized by subject.</p>
+      <h2>Topics</h2>
+      <p>Notes organized by subject.</p>
     </div>
   </div>
   <div class="post-grid">
     
-            <div class="folder-card" onclick="if(!event.target.closest('a')){window.location.href='./posts/davinci-resolve-studio/index.html'}">
+            <a href="./posts/davinci-resolve-studio/index.html" class="folder-card">
               <div class="folder-card-header">
                 <div class="folder-title-wrapper">
                   <div class="folder-icon-wrapper">
@@ -108,7 +102,7 @@
                   </div>
                   <h3 class="folder-card-title">DaVinci Resolve on Fedora</h3>
                 </div>
-                <span class="folder-post-count">1 guide</span>
+                <span class="folder-post-count">1 note</span>
               </div>
               <p class="folder-card-excerpt">Installation, compatibility, and GPU configuration notes for DaVinci Resolve on Fedora.</p>
               <div class="folder-posts-section">
@@ -124,10 +118,9 @@
                 </ul>
               </div>
               <div class="folder-card-footer">
-                <a href="./posts/davinci-resolve-studio/index.html" class="view-folder-link">Explore directory &rarr;</a>
+                <span class="view-folder-link">View topic &rarr;</span>
               </div>
-            </div>
-  </div>
+            </a>
 </main>
 <footer class="shell-footer">
   <span>kanishk.dev &middot; Personal engineering notes &middot; Built with Node.js &amp; Markdown</span>
