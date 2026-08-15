@@ -9,7 +9,10 @@ A complete step-by-step guide for installing DaVinci Resolve Studio 21 on Fedora
 
 ---
 
+## Download DaVinci Resolve Studio zip file
+
 ## 1. Install System Dependencies
+
 
 Before running the installer, install the required base dependencies using `dnf`:
 

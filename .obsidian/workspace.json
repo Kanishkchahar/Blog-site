@@ -4,19 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "326af0e966cabf6a",
+        "id": "190bd30a70c6a8c3",
         "type": "tabs",
         "children": [
           {
-            "id": "934bf1328cd9dd2d",
+            "id": "e95c47f7ca1393bc",
             "type": "leaf",
             "state": {
-              "type": "image",
+              "type": "markdown",
               "state": {
-                "file": "site/images/logo.svg"
+                "file": "content/DaVinci Resolve Studio/DaVinci Resolve Studio crack in fedora.md",
+                "mode": "preview",
+                "source": false
               },
-              "icon": "lucide-image",
-              "title": "logo"
+              "icon": "lucide-file",
+              "title": "DaVinci Resolve Studio crack in fedora"
             }
           }
         ]
@@ -186,8 +188,9 @@
       "bases:Create new base": false
     }
   },
-  "active": "934bf1328cd9dd2d",
+  "active": "e95c47f7ca1393bc",
   "lastOpenFiles": [
+    "site/images/logo.svg",
     "site/logo.svg",
     "content/fedora/fedora-gpu-drivers.md",
     "images/README.md",
