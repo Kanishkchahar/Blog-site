@@ -167,6 +167,81 @@ document.addEventListener('DOMContentLoaded', function () {
     overlay.addEventListener('click', toggleMobileSidebar);
   }
 
+  // 4b. Obsidian Sidebar Resizer (Drag to make wider/narrower)
+  var resizer = document.getElementById('obs-sidebar-resizer');
+  var obsSidebar = document.getElementById('obs-sidebar');
+  if (resizer && obsSidebar) {
+    var savedWidth = localStorage.getItem('obs-sidebar-width');
+    if (savedWidth) {
+      document.documentElement.style.setProperty('--sidebar-width', savedWidth + 'px');
+    }
+
+    var isResizing = false;
+    var startX = 0;
+    var startWidth = 0;
+
+    resizer.addEventListener('mousedown', function (e) {
+      isResizing = true;
+      startX = e.clientX;
+      startWidth = obsSidebar.getBoundingClientRect().width;
+      resizer.classList.add('resapsing');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', function (e) {
+      if (!isResizing) return;
+      var newWidth = startWidth + (e.clientX - startX);
+      if (newWidth >= 180 && newWidth <= 550) {
+        document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
+        localStorage.setItem('obs-sidebar-width', newWidth);
+      }
+    });
+
+    document.addEventListener('mouseup', function () {
+      if (isResizing) {
+        isResizing = false;
+        resizer.classList.remove('resapsing');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+    });
+  }
+
+  // 4c. Folder Collapse & State Persistence (Obsidian File Tree)
+  var treeFolders = document.querySelectorAll('.obs-tree-folder[data-folder-slug]');
+  if (treeFolders.length > 0) {
+    var storedState = {};
+    try {
+      storedState = JSON.parse(localStorage.getItem('obs-folder-states') || '{}');
+    } catch (e) {
+      storedState = {};
+    }
+
+    treeFolders.forEach(function (folder) {
+      var slug = folder.getAttribute('data-folder-slug');
+      if (slug && storedState.hasOwnProperty(slug)) {
+        if (storedState[slug] === false) {
+          folder.classList.remove('open');
+        } else {
+          folder.classList.add('open');
+        }
+      }
+
+      var header = folder.querySelector('.obs-tree-folder-header');
+      if (header) {
+        header.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var isOpen = folder.classList.toggle('open');
+          storedState[slug] = isOpen;
+          try {
+            localStorage.setItem('obs-folder-states', JSON.stringify(storedState));
+          } catch (err) {}
+        });
+      }
+    });
+  }
+
   // 5. Search Modal Functionality with Keyboard Selection & Highlighting
   var searchModal = document.getElementById('search-modal');
   var searchInput = document.getElementById('search-input');

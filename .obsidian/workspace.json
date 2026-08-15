@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "content/DaVinci Resolve Studio/DaVinci Resolve Studio crack in fedora.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
@@ -83,7 +83,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 410.98046875
   },
   "right": {
     "id": "02e19f96c041174b",
@@ -190,11 +190,14 @@
   },
   "active": "e95c47f7ca1393bc",
   "lastOpenFiles": [
+    "images/favicon.svg",
+    "images/logo.svg",
+    "images/README.md",
+    "content/DaVinci Resolve Studio/DaVinci Resolve Studio crack in fedora.md",
+    "README.md",
     "site/images/logo.svg",
     "site/logo.svg",
     "content/fedora/fedora-gpu-drivers.md",
-    "images/README.md",
-    "images/logo.svg",
     "content/web-dev/setup-vite-app.md"
   ]
 }

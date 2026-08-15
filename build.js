@@ -395,13 +395,13 @@ function buildIndex(posts, folders) {
             : `<li class="no-posts">No guides in this category yet</li>`;
 
           return `
-            <a href="./posts/${f.slug}/index.html" class="folder-card">
+            <div class="folder-card">
               <div class="folder-card-header">
                 <div class="folder-title-wrapper">
                   <div class="folder-icon-wrapper">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                   </div>
-                  <h3 class="folder-card-title">${f.title}</h3>
+                  <h3 class="folder-card-title"><a href="./posts/${f.slug}/index.html" class="folder-title-link">${f.title}</a></h3>
                 </div>
                 <span class="folder-post-count">${f.posts.length} ${f.posts.length === 1 ? 'note' : 'notes'}</span>
               </div>
@@ -413,9 +413,9 @@ function buildIndex(posts, folders) {
                 </ul>
               </div>
               <div class="folder-card-footer">
-                <span class="view-folder-link">View topic &rarr;</span>
+                <a href="./posts/${f.slug}/index.html" class="view-folder-link">View topic &rarr;</a>
               </div>
-            </a>`;
+            </div>`;
         })
         .join('\n')
     : `<div class="wu-corner-card" style="grid-column: 1 / -1; text-align: center;">
@@ -479,19 +479,16 @@ function renderVaultSidebar({ posts, folders, currentPost = null, currentFolder 
           return `
           <li class="obs-tree-file">
             <a href="${relPath}/posts/${f.slug}/${p.slug}.html" class="obs-tree-file-link${isActive ? ' active' : ''}" title="${p.title}">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               <span>${p.title}</span>
             </a>
           </li>`;
         })
         .join('');
       return `
-        <div class="obs-tree-folder open">
+        <div class="obs-tree-folder open" data-folder-slug="${f.slug}">
           <div class="obs-tree-folder-header">
-            <svg class="obs-tree-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-            <svg class="folder-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <svg class="obs-tree-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
             <span class="obs-tree-folder-title">${f.title}</span>
-            <span class="obs-tree-count">${f.posts.length}</span>
           </div>
           <ul class="obs-tree-files">${treeFiles}</ul>
         </div>`;
@@ -502,37 +499,23 @@ function renderVaultSidebar({ posts, folders, currentPost = null, currentFolder 
     return p.slug;
   }
 
-  const isAllGuidesActive = !currentPost && !currentFolder;
+  const isAllNotesActive = !currentPost && !currentFolder;
 
   return `
   <aside class="obs-sidebar doc-sidebar-left" id="obs-sidebar">
+    <div class="obs-sidebar-resizer" id="obs-sidebar-resizer"></div>
     <div class="obs-sidebar-inner">
-      <div class="builder-sidebar-brand">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
-        <span>Notes</span>
-      </div>
-
-      <div class="builder-nav-section">
-        <a href="${relPath}/notes.html" class="builder-nav-item${isAllGuidesActive ? ' active' : ''}">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span>All notes</span>
-        </a>
-      </div>
-
-      <div class="builder-nav-header">
-        <span>Topics</span>
-      </div>
-
       <nav class="obs-file-tree" id="obs-file-tree">
-        ${fileTreeGroups}
+        <div class="obs-tree-root-item">
+          <a href="${relPath}/notes.html" class="obs-tree-root-link${isAllNotesActive ? ' active' : ''}">
+            <svg class="obs-tree-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transform: rotate(90deg);"><polyline points="9 18 15 12 9 6"/></svg>
+            <span>Notes</span>
+          </a>
+        </div>
+        <div class="obs-tree-root-group" style="padding-left: 10px; margin-top: 2px;">
+          ${fileTreeGroups}
+        </div>
       </nav>
-
-      <div class="obs-sidebar-footer">
-        <span class="obs-sidebar-stat">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-          ${posts.length} ${posts.length === 1 ? 'note' : 'notes'}
-        </span>
-      </div>
     </div>
   </aside>`;
 }
