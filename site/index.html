@@ -8,77 +8,59 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/geist" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/geist-mono" rel="stylesheet">
 <link rel="stylesheet" href="./assets/style.css">
 </head>
 <body>
 <script src="./assets/script.js" defer></script>
 <header class="shell-bar">
   <div class="shell-bar-inner">
-    <a href="./index.html" class="shell-brand">
-      KANISHK.DEV
-    </a>
+    <div class="shell-left-controls">
+      <button class="mobile-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle Sidebar Navigation">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <a href="./index.html" class="shell-brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6"></path><path d="M12 19h8"></path></svg>
+        KANISHK.DEV
+      </a>
+    </div>
     <nav class="shell-nav">
       <a href="./index.html" class="nav-link active">Home</a>
       <a href="./notes.html" class="nav-link">Notes</a>
+      <a href="https://github.com/Kanishkchahar/Blog-site" target="_blank" rel="noreferrer" class="nav-link nav-github">GitHub <span aria-hidden="true">↗</span></a>
     </nav>
-    <div class="header-search">
+    <button class="header-search" type="button" aria-label="Search guides">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <span>Search</span>
+      <span>Search...</span>
       <kbd>Ctrl K</kbd>
-    </div>
+    </button>
   </div>
 </header>
+<div class="reading-progress-container"><div class="reading-progress-bar" id="reading-progress"></div></div>
 
 <div class="hero-wrapper">
-  <div class="hero-content">
-    <div>
-      <div class="hero-subtitle">
-        <span class="live-dot"></span> Digital Garden &amp; Engineering Journal
-      </div>
-      <h1 class="hero-title">Linux, Code &amp; System Architecture</h1>
-      <p class="hero-desc">Real-world walkthroughs, driver configuration, terminal setups, and software engineering notes — organized cleanly in Markdown.</p>
-
-      <div class="hero-stats-bar">
-        <div class="stat-pill">
-          <span class="stat-num">2</span>
-          <span class="stat-label">Notes Published</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-num">2</span>
-          <span class="stat-label">Folders</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-num">100%</span>
-          <span class="stat-label">Static &amp; Fast</span>
-        </div>
-      </div>
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-eyebrow">KANISHK.DEV / NOTES</div>
+      <h1 class="hero-title">Linux, tooling, and<br><em>implementation notes.</em></h1>
+      <p class="hero-desc">Practical references for setting up systems, debugging rough edges, and keeping useful commands close at hand.</p>
       
-      <div class="hero-actions">
-        <a href="./notes.html" class="btn-primary">Browse All Notes &rarr;</a>
-        <a href="https://github.com/Kanishkchahar/Blog-site" target="_blank" class="btn-secondary">GitHub Repository &nearr;</a>
-      </div>
-    </div>
+      <button class="hero-search-bar header-search" type="button" aria-label="Search guides">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <span class="hero-search-text">Search 1 guides, topics, and code snippets...</span>
+        <kbd>Ctrl K</kbd>
+      </button>
 
-    <div class="terminal-window">
-      <div class="window-titlebar">
-        <span>fedora-workstation ~ bash</span>
-        <div class="window-controls">
-          <span class="window-dot"></span>
-          <span class="window-dot"></span>
-          <span class="window-dot"></span>
+      <div class="hero-chips-row">
+        <span class="hero-chips-label">Directories:</span>
+        <div class="hero-chips-list">
+          <a href="./posts/davinci-resolve-studio/index.html" class="hero-category-chip">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <span>DaVinci Resolve on Fedora</span>
+      <span class="chip-count">1</span>
+    </a>
         </div>
-      </div>
-      <div class="window-body">
-        <div><span class="terminal-prompt">[kanishk@fedora ~]$</span> <span class="terminal-cmd">cat /etc/fedora-release</span></div>
-        <div class="terminal-output">Fedora release 40 (Workstation Edition)</div>
-        <br>
-        <div><span class="terminal-prompt">[kanishk@fedora ~]$</span> <span class="terminal-cmd">git status</span></div>
-        <div class="terminal-output">On branch main</div>
-        <div class="terminal-output">Your branch is up to date with 'origin/main'.</div>
-        <br>
-        <div><span class="terminal-prompt">[kanishk@fedora ~]$</span> <span class="terminal-cmd">node build.js</span></div>
-        <div class="terminal-output">&#10004; Parsed Markdown files &amp; folder structure</div>
-        <div class="terminal-output">&#10004; Built static site &amp; search index</div>
       </div>
     </div>
   </div>
@@ -86,109 +68,67 @@
 
 <main class="page" id="guides">
   <div class="section-header">
-    <h2>Recent Notes &amp; Guides</h2>
-    <p>Latest articles and documentation updates.</p>
+    <div class="section-header-left">
+      <h2>Latest notes</h2>
+      <p>Recently added guides and implementation references.</p>
+    </div>
+    <a href="./notes.html" class="section-link">View Notes Vault &rarr;</a>
   </div>
   <div class="recent-posts-grid">
     
-        <a href="./posts/web-dev/setup-vite-app.html" class="recent-post-card">
+        <a href="./posts/davinci-resolve-studio/davinci-resolve-studio-crack-in-fedora.html" class="recent-post-card">
           <div class="recent-post-badge">
-            <span class="folder-title-badge">Web Dev</span>
-            <span class="post-link-date">2026-08-14</span>
+            <span class="folder-title-badge">DaVinci Resolve on Fedora</span>
+            <span class="post-link-date">Aug 15, 2026</span>
           </div>
-          <h3 class="recent-post-title">Setup Vite App</h3>
-          <p class="recent-post-excerpt">Quick walkthrough for initializing a high-performance frontend project using Vite and Node.js on Linux.
-
-
-
-Run the following command in yo...</p>
-          <div class="tag-row"></div>
-        </a>
-
-        <a href="./posts/fedora/fedora-gpu-drivers.html" class="recent-post-card">
-          <div class="recent-post-badge">
-            <span class="folder-title-badge">Fedora Linux Guides</span>
-            <span class="post-link-date">2026-08-11</span>
+          <h3 class="recent-post-title">DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide</h3>
+          <p class="recent-post-excerpt">Complete guide to installing DaVinci Resolve Studio 21 on Fedora, applying the license bypass patch, fixing bundled library conflicts, and configuring NVIDIA GPU support under Wayland and X11.</p>
+          <div class="card-meta-bottom">
+            <div class="tag-row"><span class="tag">fedora</span><span class="tag">linux</span><span class="tag">davinci-resolve</span><span class="tag">nvidia</span><span class="tag">gpu</span></div>
+            <span class="card-read-time">4 min read</span>
           </div>
-          <h3 class="recent-post-title">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</h3>
-          <p class="recent-post-excerpt">A clean walkthrough for getting your GPU properly recognized on Fedora — RPM Fusion, akmod-nvidia, Secure Boot signing, and how to verify it actually worked.</p>
-          <div class="tag-row"><span class="tag">fedora</span><span class="tag">linux</span><span class="tag">nvidia</span><span class="tag">drivers</span></div>
         </a>
   </div>
 
-  <div class="section-header" style="margin-top: 60px;">
-    <h2>Content Folders</h2>
-    <p>Browse guides grouped by topic directory.</p>
+  <div class="section-header" style="margin-top: 64px;">
+    <div class="section-header-left">
+      <h2>Directories</h2>
+      <p>Guides organized by subject.</p>
+    </div>
   </div>
-  <ul class="post-grid">
-    <li>
-            <div class="wu-corner-card folder-card" onclick="if(!event.target.closest('a')){window.location.href='./posts/fedora/index.html'}">
-              <div class="wu-corner-marks">
-                <span class="mark top-left"></span>
-                <span class="mark top-right"></span>
-                <span class="mark bottom-left"></span>
-                <span class="mark bottom-right"></span>
-              </div>
+  <div class="post-grid">
+    
+            <div class="folder-card" onclick="if(!event.target.closest('a')){window.location.href='./posts/davinci-resolve-studio/index.html'}">
               <div class="folder-card-header">
                 <div class="folder-title-wrapper">
                   <div class="folder-icon-wrapper">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                   </div>
-                  <h3 class="folder-card-title">Fedora Linux Guides</h3>
+                  <h3 class="folder-card-title">DaVinci Resolve on Fedora</h3>
                 </div>
-                <span class="folder-post-count">1 post</span>
+                <span class="folder-post-count">1 guide</span>
               </div>
-              <p class="folder-card-excerpt">Step-by-step documentation for installing drivers, configuring settings, and optimizing performance on Fedora Workstation.</p>
+              <p class="folder-card-excerpt">Installation, compatibility, and GPU configuration notes for DaVinci Resolve on Fedora.</p>
               <div class="folder-posts-section">
                 <div class="section-divider"></div>
                 <ul class="folder-posts-list">
                   <li>
-                    <a href="./posts/fedora/fedora-gpu-drivers.html" class="folder-post-link">
-                      <span class="post-link-bullet">&bull;</span>
-                      <span class="post-link-title">Installing GPU Drivers on Fedora (NVIDIA, AMD, Intel)</span>
-                      <span class="post-link-date">2026-08-11</span>
+                    <a href="./posts/davinci-resolve-studio/davinci-resolve-studio-crack-in-fedora.html" class="folder-post-link">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      <span class="post-link-title">DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide</span>
+                      <span class="post-link-date">Aug 15, 2026</span>
                     </a>
                   </li>
                 </ul>
               </div>
-            </div>
-          </li>
-<li>
-            <div class="wu-corner-card folder-card" onclick="if(!event.target.closest('a')){window.location.href='./posts/web-dev/index.html'}">
-              <div class="wu-corner-marks">
-                <span class="mark top-left"></span>
-                <span class="mark top-right"></span>
-                <span class="mark bottom-left"></span>
-                <span class="mark bottom-right"></span>
-              </div>
-              <div class="folder-card-header">
-                <div class="folder-title-wrapper">
-                  <div class="folder-icon-wrapper">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                  </div>
-                  <h3 class="folder-card-title">Web Dev</h3>
-                </div>
-                <span class="folder-post-count">1 post</span>
-              </div>
-              <p class="folder-card-excerpt">Guides and notes in Web Dev.</p>
-              <div class="folder-posts-section">
-                <div class="section-divider"></div>
-                <ul class="folder-posts-list">
-                  <li>
-                    <a href="./posts/web-dev/setup-vite-app.html" class="folder-post-link">
-                      <span class="post-link-bullet">&bull;</span>
-                      <span class="post-link-title">Setup Vite App</span>
-                      <span class="post-link-date">2026-08-14</span>
-                    </a>
-                  </li>
-                </ul>
+              <div class="folder-card-footer">
+                <a href="./posts/davinci-resolve-studio/index.html" class="view-folder-link">Explore directory &rarr;</a>
               </div>
             </div>
-          </li>
-  </ul>
+  </div>
 </main>
 <footer class="shell-footer">
-  <span>nullptr.log &middot; Open source Linux Documentation &middot; Powered by Node.js & Markdown</span>
+  <span>kanishk.dev &middot; Personal engineering notes &middot; Built with Node.js &amp; Markdown</span>
 </footer>
 
 <!-- Interactive Search Modal Overlay -->
@@ -201,6 +141,11 @@ Run the following command in yo...</p>
     </div>
     <div id="search-results" class="search-results-list" data-relpath=".">
       <div class="search-placeholder">Type to search notes and guides...</div>
+    </div>
+    <div class="search-modal-footer">
+      <span><kbd>&uarr;</kbd> <kbd>&darr;</kbd> Navigate</span>
+      <span><kbd>&crarr;</kbd> Open</span>
+      <span><kbd>Esc</kbd> Close</span>
     </div>
   </div>
 </div>

@@ -3,31 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Notes — kanishk.dev</title>
-<meta name="description" content="All notes and guides">
+<title>DaVinci Resolve on Fedora — kanishk.dev</title>
+<meta name="description" content="Installation, compatibility, and GPU configuration notes for DaVinci Resolve on Fedora.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/geist" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/geist-mono" rel="stylesheet">
-<link rel="stylesheet" href="./assets/style.css">
+<link rel="stylesheet" href="../../assets/style.css">
 </head>
 <body>
-<script src="./assets/script.js" defer></script>
+<script src="../../assets/script.js" defer></script>
 <header class="shell-bar">
   <div class="shell-bar-inner">
     <div class="shell-left-controls">
       <button class="mobile-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle Sidebar Navigation">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
-      <a href="./index.html" class="shell-brand">
+      <a href="../../index.html" class="shell-brand">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6"></path><path d="M12 19h8"></path></svg>
         KANISHK.DEV
       </a>
     </div>
     <nav class="shell-nav">
-      <a href="./index.html" class="nav-link">Home</a>
-      <a href="./notes.html" class="nav-link active">Notes</a>
+      <a href="../../index.html" class="nav-link">Home</a>
+      <a href="../../notes.html" class="nav-link active">Notes</a>
       <a href="https://github.com/Kanishkchahar/Blog-site" target="_blank" rel="noreferrer" class="nav-link nav-github">GitHub <span aria-hidden="true">↗</span></a>
     </nav>
     <button class="header-search" type="button" aria-label="Search guides">
@@ -38,10 +38,8 @@
   </div>
 </header>
 <div class="reading-progress-container"><div class="reading-progress-bar" id="reading-progress"></div></div>
-
-<div class="obs-layout">
-
-  <!-- Left Sidebar -->
+<div class="doc-layout">
+  <!-- Left Navigation Sidebar -->
   
   <aside class="obs-sidebar doc-sidebar-left" id="obs-sidebar">
     <div class="obs-sidebar-inner">
@@ -51,7 +49,7 @@
       </div>
 
       <div class="builder-nav-section">
-        <a href="./notes.html" class="builder-nav-item active">
+        <a href="../../notes.html" class="builder-nav-item">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           <span>All Guides</span>
         </a>
@@ -72,7 +70,7 @@
           </div>
           <ul class="obs-tree-files">
           <li class="obs-tree-file">
-            <a href="./posts/davinci-resolve-studio/davinci-resolve-studio-crack-in-fedora.html" class="obs-tree-file-link" title="DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide">
+            <a href="../../posts/davinci-resolve-studio/davinci-resolve-studio-crack-in-fedora.html" class="obs-tree-file-link" title="DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               <span>DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide</span>
             </a>
@@ -93,63 +91,28 @@
     </div>
   </aside>
 
-  <!-- Main content area -->
-  <main class="obs-main">
-
-    <!-- Clean Header Banner -->
-    <div class="obs-vault-header">
-      <div class="obs-vault-header-inner">
-        <div class="obs-vault-title-row">
-          <h1 class="obs-vault-title">Notes</h1>
-          <span class="obs-vault-badge">1 guide</span>
-        </div>
-        <p class="obs-vault-desc">Search, filter by topic, or browse by category.</p>
-      </div>
-    </div>
-
-    <!-- Clean Controls Bar -->
-    <div class="obs-controls-bar">
-      <div class="obs-controls-inner">
-        <div class="obs-inline-search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" id="obs-quick-search" placeholder="Search notes by title, tag, or content..." autocomplete="off" />
-          <button id="obs-search-clear" class="obs-search-clear-btn" aria-label="Clear search" style="display:none;">&times;</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Centered Content Area -->
-    <div class="obs-content-area">
-      <div class="obs-content-inner" id="obs-notes-container">
-        
-        <div class="obs-folder-section" data-folder="davinci-resolve-studio">
-          <div class="obs-folder-section-header">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            <span class="obs-folder-section-name">DaVinci Resolve on Fedora</span>
-            <span class="obs-folder-section-count">1 guide</span>
+  <main class="doc-content">
+    <div class="breadcrumb"><a href="../../index.html">Home</a> / <a href="../../notes.html">Notes</a> / DaVinci Resolve on Fedora</div>
+    <h1>DaVinci Resolve on Fedora</h1>
+    <p style="color:var(--text-muted);margin-bottom:36px">Installation, compatibility, and GPU configuration notes for DaVinci Resolve on Fedora.</p>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <a href="../../posts/davinci-resolve-studio/davinci-resolve-studio-crack-in-fedora.html" class="note-row">
+          <div class="note-row-title">DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide</div>
+          <div class="note-row-meta">
+            <span class="note-row-date">Aug 15, 2026</span>
+            <div class="tag-row"><span class="tag">fedora</span><span class="tag">linux</span><span class="tag">davinci-resolve</span><span class="tag">nvidia</span><span class="tag">gpu</span></div>
           </div>
-          <div class="obs-notes-list">
-          <a href="./posts/davinci-resolve-studio/davinci-resolve-studio-crack-in-fedora.html" class="obs-note-row" data-tags="fedora,linux,davinci-resolve,nvidia,gpu">
-            <div class="obs-note-card-top">
-              <span class="obs-folder-badge">DaVinci Resolve on Fedora</span>
-              <div class="obs-note-meta-right">
-                <span class="obs-note-row-date">Aug 15, 2026</span>
-                <span class="obs-note-row-time">4 min read</span>
-              </div>
-            </div>
-            <h3 class="obs-note-row-title">DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide</h3>
-            <p class="obs-note-row-excerpt">Complete guide to installing DaVinci Resolve Studio 21 on Fedora, applying the license bypass patch, fixing bundled library conflicts, and configuring NVIDIA GPU support under Wayland and X11.</p>
-            <div class="obs-tags-inline"><span class="obs-tag">fedora</span><span class="obs-tag">linux</span><span class="obs-tag">davinci-resolve</span><span class="obs-tag">nvidia</span><span class="obs-tag">gpu</span></div>
-          </a></div>
-        </div>
-        <div id="obs-no-results" class="obs-empty-search" style="display: none;">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <p>No notes matched your search or filter.</p>
-        </div>
-      </div>
+          <p class="note-row-excerpt">Complete guide to installing DaVinci Resolve Studio 21 on Fedora, applying the license bypass patch, fixing bundled library conflicts, and configuring NVIDIA GPU support under Wayland and X11.</p>
+        </a>
     </div>
-
   </main>
+
+  <aside class="doc-sidebar-right">
+    <div class="toc-title">In this category</div>
+    <ul class="toc-links">
+      <li><a href="../../posts/davinci-resolve-studio/davinci-resolve-studio-crack-in-fedora.html">DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide</a></li>
+    </ul>
+  </aside>
 </div>
 <footer class="shell-footer">
   <span>kanishk.dev &middot; Personal engineering notes &middot; Built with Node.js &amp; Markdown</span>
@@ -163,7 +126,7 @@
       <input type="text" id="search-input" placeholder="Search documentation, tags, topics..." autocomplete="off" />
       <span class="search-modal-close">&times;</span>
     </div>
-    <div id="search-results" class="search-results-list" data-relpath=".">
+    <div id="search-results" class="search-results-list" data-relpath="../..">
       <div class="search-placeholder">Type to search notes and guides...</div>
     </div>
     <div class="search-modal-footer">

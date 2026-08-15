@@ -14,6 +14,21 @@ function slugify(text) {
     .replace(/-+/g, '-');
 }
 
+function extractExcerpt(rawContent, userExcerpt) {
+  if (userExcerpt && userExcerpt.trim()) return userExcerpt.trim();
+  const clean = rawContent
+    .replace(/^---[\s\S]*?---/, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/^#+.*$/gm, '')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[*_~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (clean.length <= 150) return clean;
+  return clean.slice(0, 145).trim() + '...';
+}
+
 
 const ROOT = __dirname;
 const CONTENT_DIR = path.join(ROOT, 'content');
@@ -76,15 +91,57 @@ function formatTitle(slug) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// Convert any folder name or filename (including spaces & special chars) to a URL-safe slug
+function sanitizeSlug(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')   // spaces and special chars → hyphens
+    .replace(/^-+|-+$/g, '');       // strip leading/trailing hyphens
+}
+
+function processMarkdown(content) {
+  const headings = [];
+  let html = md.render(content);
+
+  // 1. Inject IDs into headings
+  html = html.replace(/<h([2-4])>(.*?)<\/h\1>/g, (match, level, text) => {
+    const cleanText = text.replace(/<[^>]+>/g, '').trim();
+    const id = slugify(cleanText);
+    headings.push({ level: parseInt(level), text: cleanText, id });
+    return `<h${level} id="${id}">${text}</h${level}>`;
+  });
+
+  // 2. Parse GitHub-style alerts: > [!NOTE], > [!TIP], > [!IMPORTANT], > [!WARNING], > [!CAUTION]
+  html = html.replace(
+    /<blockquote>\s*<p>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*([\s\S]*?)<\/blockquote>/gi,
+    (match, type, body) => {
+      const alertType = type.toLowerCase();
+      let icon = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+      if (alertType === 'tip') {
+        icon = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>';
+      } else if (alertType === 'warning' || alertType === 'caution') {
+        icon = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      } else if (alertType === 'important') {
+        icon = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+      }
+      return `<div class="callout callout-${alertType}"><div class="callout-title">${icon}<span>${type.toUpperCase()}</span></div><div class="callout-body"><p>${body}</div>`;
+    }
+  );
+
+  return { html, headings };
+}
+
 function readPosts() {
   const posts = [];
   const foldersMap = {};
 
-  function getFolderMeta(folderSlug) {
+  function getFolderMeta(folderEntry, folderSlugOverride) {
+    // folderEntry = actual filesystem folder name, folderSlug = URL-safe slug
+    const folderSlug = folderSlugOverride || sanitizeSlug(folderEntry);
     if (foldersMap[folderSlug]) return foldersMap[folderSlug];
 
-    const folderPath = path.join(CONTENT_DIR, folderSlug);
-    let title = formatTitle(folderSlug);
+    const folderPath = path.join(CONTENT_DIR, folderEntry);
+    let title = folderEntry; // use original name as default title
     let description = `Guides and notes in ${title}.`;
 
     if (folderSlug !== 'general') {
@@ -95,7 +152,7 @@ function readPosts() {
           if (meta.title) title = meta.title;
           if (meta.description) description = meta.description;
         } catch (e) {
-          console.error(`Error parsing meta.json in content/${folderSlug}:`, e);
+          console.error(`Error parsing meta.json in content/${folderEntry}:`, e);
         }
       }
     } else {
@@ -120,24 +177,21 @@ function readPosts() {
       if (entry === 'images' || entry.startsWith('.')) continue;
 
       const files = fs.readdirSync(fullPath).filter((f) => f.endsWith('.md'));
-      const folderMeta = getFolderMeta(entry);
+      const folderMeta = getFolderMeta(entry); // entry = raw fs name, slug computed internally
 
       for (const file of files) {
         const raw = fs.readFileSync(path.join(fullPath, file), 'utf8');
         const { data, content } = matter(raw);
-        const slug = file.replace(/\.md$/, '');
+        const slug = sanitizeSlug(file.replace(/\.md$/, '')); // sanitize filename too
         const title = data.title || formatTitle(slug);
         const date = data.date || new Date().toISOString().split('T')[0];
-        const excerpt = data.excerpt || (content.trim().replace(/^#+.*$/gm, '').slice(0, 140).trim() + '...');
+        const excerpt = extractExcerpt(content, data.excerpt);
 
-        // Extract headings for Table of Contents and inject IDs into headings
-        const headings = [];
-        const renderedHtml = md.render(content).replace(/<h([2-3])>(.*?)<\/h\1>/g, (match, level, text) => {
-          const cleanText = text.replace(/<[^>]+>/g, '').trim();
-          const id = slugify(cleanText);
-          headings.push({ level: parseInt(level), text: cleanText, id });
-          return `<h${level} id="${id}">${text}</h${level}>`;
-        });
+        // Calculate estimated reading time
+        const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+        const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
+        const { html: renderedHtml, headings } = processMarkdown(content);
 
         const post = {
           slug,
@@ -145,6 +199,7 @@ function readPosts() {
           date,
           tags: data.tags || [],
           excerpt,
+          readingTime,
           html: renderedHtml,
           headings,
           folder: {
@@ -160,18 +215,15 @@ function readPosts() {
       const folderMeta = getFolderMeta('general');
       const raw = fs.readFileSync(fullPath, 'utf8');
       const { data, content } = matter(raw);
-      const slug = entry.replace(/\.md$/, '');
+      const slug = sanitizeSlug(entry.replace(/\.md$/, ''));
       const title = data.title || formatTitle(slug);
       const date = data.date || new Date().toISOString().split('T')[0];
-      const excerpt = data.excerpt || (content.trim().replace(/^#+.*$/gm, '').slice(0, 140).trim() + '...');
+      const excerpt = extractExcerpt(content, data.excerpt);
 
-      const headings = [];
-      const renderedHtml = md.render(content).replace(/<h([2-3])>(.*?)<\/h\1>/g, (match, level, text) => {
-        const cleanText = text.replace(/<[^>]+>/g, '').trim();
-        const id = slugify(cleanText);
-        headings.push({ level: parseInt(level), text: cleanText, id });
-        return `<h${level} id="${id}">${text}</h${level}>`;
-      });
+      const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+      const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
+      const { html: renderedHtml, headings } = processMarkdown(content);
 
       const post = {
         slug,
@@ -179,6 +231,7 @@ function readPosts() {
         date,
         tags: data.tags || [],
         excerpt,
+        readingTime,
         html: renderedHtml,
         headings,
         folder: {
@@ -228,36 +281,44 @@ function head(title, description, relPath = '.') {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/geist" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/geist-mono" rel="stylesheet">
 <link rel="stylesheet" href="${relPath}/assets/style.css">
 </head>
 <body>
 <script src="${relPath}/assets/script.js" defer><\/script>`;
 }
 
-function header(active, relPath = '.') {
-  const nav = (href, label, key) =>
-    `<a href="${href}" class="nav-link${active === key ? ' active' : ''}">${label}</a>`;
+function header(activeTab = '', relPath = '.') {
   return `<header class="shell-bar">
   <div class="shell-bar-inner">
-    <a href="${relPath}/index.html" class="shell-brand">
-      KANISHK.DEV
-    </a>
-    <nav class="shell-nav">
-      ${nav(`${relPath}/index.html`, 'Home', 'home')}
-      ${nav(`${relPath}/notes.html`, 'Notes', 'notes')}
-    </nav>
-    <div class="header-search">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <span>Search</span>
-      <kbd>Ctrl K</kbd>
+    <div class="shell-left-controls">
+      <button class="mobile-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle Sidebar Navigation">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <a href="${relPath}/index.html" class="shell-brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6"></path><path d="M12 19h8"></path></svg>
+        KANISHK.DEV
+      </a>
     </div>
+    <nav class="shell-nav">
+      <a href="${relPath}/index.html" class="nav-link${activeTab === 'home' ? ' active' : ''}">Home</a>
+      <a href="${relPath}/notes.html" class="nav-link${activeTab === 'notes' ? ' active' : ''}">Notes</a>
+      <a href="${SITE.repoUrl}" target="_blank" rel="noreferrer" class="nav-link nav-github">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+    <button class="header-search" type="button" aria-label="Search guides">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <span>Search...</span>
+      <kbd>Ctrl K</kbd>
+    </button>
   </div>
-</header>`;
+</header>
+<div class="reading-progress-container"><div class="reading-progress-bar" id="reading-progress"></div></div>`;
 }
 
 function footer(relPath = '.') {
   return `<footer class="shell-footer">
-  <span>nullptr.log &middot; Open source Linux Documentation &middot; Powered by Node.js & Markdown</span>
+  <span>kanishk.dev &middot; Personal engineering notes &middot; Built with Node.js &amp; Markdown</span>
 </footer>
 
 <!-- Interactive Search Modal Overlay -->
@@ -271,6 +332,11 @@ function footer(relPath = '.') {
     <div id="search-results" class="search-results-list" data-relpath="${relPath}">
       <div class="search-placeholder">Type to search notes and guides...</div>
     </div>
+    <div class="search-modal-footer">
+      <span><kbd>&uarr;</kbd> <kbd>&darr;</kbd> Navigate</span>
+      <span><kbd>&crarr;</kbd> Open</span>
+      <span><kbd>Esc</kbd> Close</span>
+    </div>
   </div>
 </div>
 </body>
@@ -281,7 +347,15 @@ function footer(relPath = '.') {
 function buildIndex(posts, folders) {
   const totalPosts = posts.length;
   const totalFolders = folders.length;
-  const recentPosts = posts.slice(0, 4);
+  const recentPosts = posts.slice(0, 6);
+
+  const folderPills = folders
+    .map((f) => `<a href="./posts/${f.slug}/index.html" class="hero-category-chip">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <span>${f.title}</span>
+      <span class="chip-count">${f.posts.length}</span>
+    </a>`)
+    .join('\n');
 
   const recentPostsCards = recentPosts.length > 0
     ? recentPosts.map((p) => {
@@ -290,11 +364,14 @@ function buildIndex(posts, folders) {
         <a href="./posts/${p.folder.slug}/${p.slug}.html" class="recent-post-card">
           <div class="recent-post-badge">
             <span class="folder-title-badge">${p.folder.title}</span>
-            <span class="post-link-date">${isoDate(p.date)}</span>
+            <span class="post-link-date">${fmtDate(p.date)}</span>
           </div>
           <h3 class="recent-post-title">${p.title}</h3>
           <p class="recent-post-excerpt">${p.excerpt}</p>
-          <div class="tag-row">${tags}</div>
+          <div class="card-meta-bottom">
+            <div class="tag-row">${tags}</div>
+            <span class="card-read-time">${p.readingTime} min read</span>
+          </div>
         </a>`;
       }).join('\n')
     : `<p style="color:var(--text-muted)">No posts published yet.</p>`;
@@ -304,35 +381,29 @@ function buildIndex(posts, folders) {
         .map((f) => {
           const postLinks = f.posts.length > 0
             ? f.posts
-                .slice(0, 3)
+                .slice(0, 4)
                 .map((p) => {
                   return `<li>
                     <a href="./posts/${f.slug}/${p.slug}.html" class="folder-post-link">
-                      <span class="post-link-bullet">&bull;</span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                       <span class="post-link-title">${p.title}</span>
-                      <span class="post-link-date">${isoDate(p.date)}</span>
+                      <span class="post-link-date">${fmtDate(p.date)}</span>
                     </a>
                   </li>`;
                 })
                 .join('\n')
             : `<li class="no-posts">No guides in this category yet</li>`;
 
-          return `<li>
-            <div class="wu-corner-card folder-card" onclick="if(!event.target.closest('a')){window.location.href='./posts/${f.slug}/index.html'}">
-              <div class="wu-corner-marks">
-                <span class="mark top-left"></span>
-                <span class="mark top-right"></span>
-                <span class="mark bottom-left"></span>
-                <span class="mark bottom-right"></span>
-              </div>
+          return `
+            <div class="folder-card" onclick="if(!event.target.closest('a')){window.location.href='./posts/${f.slug}/index.html'}">
               <div class="folder-card-header">
                 <div class="folder-title-wrapper">
                   <div class="folder-icon-wrapper">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                   </div>
                   <h3 class="folder-card-title">${f.title}</h3>
                 </div>
-                <span class="folder-post-count">${f.posts.length} ${f.posts.length === 1 ? 'post' : 'posts'}</span>
+                <span class="folder-post-count">${f.posts.length} ${f.posts.length === 1 ? 'guide' : 'guides'}</span>
               </div>
               <p class="folder-card-excerpt">${f.description}</p>
               <div class="folder-posts-section">
@@ -341,8 +412,10 @@ function buildIndex(posts, folders) {
                   ${postLinks}
                 </ul>
               </div>
-            </div>
-          </li>`;
+              <div class="folder-card-footer">
+                <a href="./posts/${f.slug}/index.html" class="view-folder-link">Explore directory &rarr;</a>
+              </div>
+            </div>`;
         })
         .join('\n')
     : `<div class="wu-corner-card" style="grid-column: 1 / -1; text-align: center;">
@@ -354,55 +427,23 @@ function buildIndex(posts, folders) {
 ${header('home')}
 
 <div class="hero-wrapper">
-  <div class="hero-content">
-    <div>
-      <div class="hero-subtitle">
-        <span class="live-dot"></span> Digital Garden &amp; Engineering Journal
-      </div>
-      <h1 class="hero-title">Linux, Code &amp; System Architecture</h1>
-      <p class="hero-desc">Real-world walkthroughs, driver configuration, terminal setups, and software engineering notes — organized cleanly in Markdown.</p>
-
-      <div class="hero-stats-bar">
-        <div class="stat-pill">
-          <span class="stat-num">${totalPosts}</span>
-          <span class="stat-label">Notes Published</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-num">${totalFolders}</span>
-          <span class="stat-label">Folders</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-num">100%</span>
-          <span class="stat-label">Static &amp; Fast</span>
-        </div>
-      </div>
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-eyebrow">KANISHK.DEV / NOTES</div>
+      <h1 class="hero-title">Linux, tooling, and<br><em>implementation notes.</em></h1>
+      <p class="hero-desc">Practical references for setting up systems, debugging rough edges, and keeping useful commands close at hand.</p>
       
-      <div class="hero-actions">
-        <a href="./notes.html" class="btn-primary">Browse All Notes &rarr;</a>
-        <a href="${SITE.repoUrl}" target="_blank" class="btn-secondary">GitHub Repository &nearr;</a>
-      </div>
-    </div>
+      <button class="hero-search-bar header-search" type="button" aria-label="Search guides">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <span class="hero-search-text">Search ${totalPosts} guides, topics, and code snippets...</span>
+        <kbd>Ctrl K</kbd>
+      </button>
 
-    <div class="terminal-window">
-      <div class="window-titlebar">
-        <span>fedora-workstation ~ bash</span>
-        <div class="window-controls">
-          <span class="window-dot"></span>
-          <span class="window-dot"></span>
-          <span class="window-dot"></span>
+      <div class="hero-chips-row">
+        <span class="hero-chips-label">Directories:</span>
+        <div class="hero-chips-list">
+          ${folderPills}
         </div>
-      </div>
-      <div class="window-body">
-        <div><span class="terminal-prompt">[kanishk@fedora ~]$</span> <span class="terminal-cmd">cat /etc/fedora-release</span></div>
-        <div class="terminal-output">Fedora release 40 (Workstation Edition)</div>
-        <br>
-        <div><span class="terminal-prompt">[kanishk@fedora ~]$</span> <span class="terminal-cmd">git status</span></div>
-        <div class="terminal-output">On branch main</div>
-        <div class="terminal-output">Your branch is up to date with 'origin/main'.</div>
-        <br>
-        <div><span class="terminal-prompt">[kanishk@fedora ~]$</span> <span class="terminal-cmd">node build.js</span></div>
-        <div class="terminal-output">&#10004; Parsed Markdown files &amp; folder structure</div>
-        <div class="terminal-output">&#10004; Built static site &amp; search index</div>
       </div>
     </div>
   </div>
@@ -410,49 +451,122 @@ ${header('home')}
 
 <main class="page" id="guides">
   <div class="section-header">
-    <h2>Recent Notes &amp; Guides</h2>
-    <p>Latest articles and documentation updates.</p>
+    <div class="section-header-left">
+      <h2>Latest notes</h2>
+      <p>Recently added guides and implementation references.</p>
+    </div>
+    <a href="./notes.html" class="section-link">View Notes Vault &rarr;</a>
   </div>
   <div class="recent-posts-grid">
     ${recentPostsCards}
   </div>
 
-  <div class="section-header" style="margin-top: 60px;">
-    <h2>Content Folders</h2>
-    <p>Browse guides grouped by topic directory.</p>
+  <div class="section-header" style="margin-top: 64px;">
+    <div class="section-header-left">
+      <h2>Directories</h2>
+      <p>Guides organized by subject.</p>
+    </div>
   </div>
-  <ul class="post-grid">
+  <div class="post-grid">
     ${folderCards}
-  </ul>
+  </div>
 </main>
 ${footer()}`;
 }
 
-function buildPost(post, folders) {
-  const relPath = '../..';
-
-  const sidebarLinks = folders
+function renderVaultSidebar({ posts, folders, currentPost = null, currentFolder = null, relPath = '.' }) {
+  const fileTreeGroups = folders
     .map((f) => {
       if (f.posts.length === 0) return '';
-      const isCurrentFolder = f.slug === post.folder.slug;
-      const links = f.posts
+      const treeFiles = f.posts
         .map((p) => {
-          const href = `${relPath}/posts/${f.slug}/${p.slug}.html`;
-          const isActive = p.slug === post.slug && isCurrentFolder;
-          return `<li><a href="${href}"${isActive ? ' class="active"' : ''}>${p.title}</a></li>`;
+          const isActive = currentPost && p.slug === postSlug(p) && f.slug === currentPost.folder.slug;
+          return `
+          <li class="obs-tree-file">
+            <a href="${relPath}/posts/${f.slug}/${p.slug}.html" class="obs-tree-file-link${isActive ? ' active' : ''}" title="${p.title}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>${p.title}</span>
+            </a>
+          </li>`;
         })
-        .join('\n');
-      return `<div class="sidebar-group${isCurrentFolder ? '' : ' collapsed'}">
-        <div class="sidebar-title">
-          <span>${f.title}</span>
-          <span class="sidebar-arrow">&#9662;</span>
-        </div>
-        <ul class="sidebar-links">
-          ${links}
-        </ul>
-      </div>`;
+        .join('');
+      return `
+        <div class="obs-tree-folder open">
+          <div class="obs-tree-folder-header">
+            <svg class="obs-tree-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            <svg class="folder-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span class="obs-tree-folder-title">${f.title}</span>
+            <span class="obs-tree-count">${f.posts.length}</span>
+          </div>
+          <ul class="obs-tree-files">${treeFiles}</ul>
+        </div>`;
     })
-    .join('\n');
+    .join('');
+
+  function postSlug(p) {
+    return p.slug;
+  }
+
+  const isAllGuidesActive = !currentPost && !currentFolder;
+
+  return `
+  <aside class="obs-sidebar doc-sidebar-left" id="obs-sidebar">
+    <div class="obs-sidebar-inner">
+      <div class="builder-sidebar-brand">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+        <span>Notes Vault</span>
+      </div>
+
+      <div class="builder-nav-section">
+        <a href="${relPath}/notes.html" class="builder-nav-item${isAllGuidesActive ? ' active' : ''}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>All Guides</span>
+        </a>
+      </div>
+
+      <div class="builder-nav-header">
+        <span>Directories</span>
+      </div>
+
+      <nav class="obs-file-tree" id="obs-file-tree">
+        ${fileTreeGroups}
+      </nav>
+
+      <div class="obs-sidebar-footer">
+        <span class="obs-sidebar-stat">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          ${posts.length} guides
+        </span>
+        <span class="obs-sidebar-stat">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          ${folders.length} categories
+        </span>
+      </div>
+    </div>
+  </aside>`;
+}
+
+function buildPost(post, folders, allPosts) {
+  const relPath = '../..';
+
+  // Calculate Next and Previous posts
+  const currentIndex = allPosts.findIndex((p) => p.slug === post.slug && p.folder.slug === post.folder.slug);
+  const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+  const nextPost = currentIndex >= 0 && currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+
+  const prevCard = prevPost
+    ? `<a href="${relPath}/posts/${prevPost.folder.slug}/${prevPost.slug}.html" class="pagination-card prev">
+        <span class="pagination-label">&larr; Previous Article</span>
+        <span class="pagination-title">${prevPost.title}</span>
+      </a>`
+    : `<div></div>`;
+
+  const nextCard = nextPost
+    ? `<a href="${relPath}/posts/${nextPost.folder.slug}/${nextPost.slug}.html" class="pagination-card next">
+        <span class="pagination-label">Next Article &rarr;</span>
+        <span class="pagination-title">${nextPost.title}</span>
+      </a>`
+    : `<div></div>`;
 
   const tocMarkup = post.headings && post.headings.length > 0
     ? post.headings
@@ -461,23 +575,35 @@ function buildPost(post, folders) {
     : `<li><a href="#">Overview</a></li>`;
 
   return `${head(`${post.title} — ${SITE.title}`, post.excerpt, relPath)}
-${header('', relPath)}
+${header('notes', relPath)}
 
 <div class="doc-layout">
   <!-- Left Navigation Sidebar -->
-  <aside class="doc-sidebar-left">
-    ${sidebarLinks}
-  </aside>
+  ${renderVaultSidebar({ posts: allPosts, folders, currentPost: post, relPath })}
 
   <!-- Central Documentation Content -->
   <main class="doc-content">
-    <div class="breadcrumb"><a href="${relPath}/index.html">Documentation</a> / <a href="${relPath}/notes.html">${post.folder.title}</a> / ${post.slug}.md</div>
-    <h1>${post.title}</h1>
+    <div class="breadcrumb"><a href="${relPath}/index.html">Home</a> / <a href="${relPath}/notes.html">Notes</a> / <a href="${relPath}/posts/${post.folder.slug}/index.html">${post.folder.title}</a> / ${post.slug}.md</div>
+    <h1 class="post-page-title">${post.title}</h1>
+    
+    <div class="post-meta-header">
+      <div class="meta-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${fmtDate(post.date)}</div>
+      <div class="meta-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${post.readingTime} min read</div>
+      <div class="meta-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> ${post.folder.title}</div>
+      <button class="btn-share-link" id="share-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg> Share Link
+      </button>
+    </div>
+    ${post.tags && post.tags.length > 0 ? `<div class="tag-row" style="margin-bottom:28px">${post.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
 
     <article class="post-body">
-      ${post.html}
+      ${post.html.replace(/src="\/images\//g, `src="${relPath}/images/`).replace(/src="\.\/images\//g, `src="${relPath}/images/`)}
     </article>
 
+    <div class="post-pagination-nav">
+      ${prevCard}
+      ${nextCard}
+    </div>
   </main>
 
   <!-- Right TOC Sidebar -->
@@ -488,115 +614,108 @@ ${header('', relPath)}
     </ul>
   </aside>
 </div>
+
+<div class="toast-notification" id="toast">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span>Article link copied to clipboard!</span>
+</div>
 ${footer(relPath)}`;
 }
 
 function buildNotes(posts, folders) {
-  const sidebarLinks = folders
-    .map((f) => {
-      if (f.posts.length === 0) return '';
-      const links = f.posts
-        .map((p) => `<li><a href="./posts/${f.slug}/${p.slug}.html">${p.title}</a></li>`)
-        .join('\n');
-      return `<div class="sidebar-group">
-        <div class="sidebar-title">
-          <span>${f.title}</span>
-          <span class="sidebar-arrow">&#9662;</span>
-        </div>
-        <ul class="sidebar-links">
-          ${links}
-        </ul>
-      </div>`;
-    })
-    .join('\n');
+  // Extract all unique tags across posts
+  const allTagsSet = new Set();
+  posts.forEach(p => (p.tags || []).forEach(t => allTagsSet.add(t)));
+  const allTags = Array.from(allTagsSet);
 
-  const noteSections = folders.length > 0
-    ? folders
-        .map((f) => {
-          if (f.posts.length === 0) return '';
-          const mdFiles = f.posts
-            .map((p) => {
-              const tags = p.tags.map((t) => `<span class="tag">${t}</span>`).join('');
-              return `<a href="./posts/${f.slug}/${p.slug}.html" class="md-file-row">
-                <div class="md-file-header">
-                  <div class="md-file-name">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    <span>${p.slug}.md</span>
-                  </div>
-                  <span class="md-file-date">${isoDate(p.date)}</span>
-                </div>
-                <div class="md-file-title">${p.title}</div>
-                <p class="md-file-excerpt">${p.excerpt}</p>
-                <div class="tag-row">${tags}</div>
-              </a>`;
-            })
-            .join('\n');
+  const tagPills = allTags.map(t => `<button class="obs-filter-pill" data-tag="${t}">${t}</button>`).join('');
 
-          return `<div class="folder-container-card">
-            <div class="folder-header-bar">
-              <div class="folder-header-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon" style="color: var(--cyan);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                <span class="folder-path-name">content/${f.slug}/</span>
-                <span class="folder-title-badge">${f.title}</span>
+  // ---- Main notes cards list ----
+  const obsFileRows = folders.length > 0
+    ? folders.map((f) => {
+        if (f.posts.length === 0) return '';
+        const rows = f.posts.map((p) => {
+          const tags = (p.tags || []).map(t => `<span class="obs-tag">${t}</span>`).join('');
+          return `
+          <a href="./posts/${f.slug}/${p.slug}.html" class="obs-note-row" data-tags="${(p.tags || []).join(',')}">
+            <div class="obs-note-card-top">
+              <span class="obs-folder-badge">${f.title}</span>
+              <div class="obs-note-meta-right">
+                <span class="obs-note-row-date">${fmtDate(p.date)}</span>
+                <span class="obs-note-row-time">${p.readingTime} min read</span>
               </div>
-              <span class="folder-file-count">${f.posts.length} ${f.posts.length === 1 ? 'file' : 'files'}</span>
             </div>
-            <p class="folder-desc">${f.description}</p>
-            <div class="folder-files-list">
-              ${mdFiles}
-            </div>
-          </div>`;
-        })
-        .join('\n')
-    : `<p style="color:var(--text-muted)">No notes yet. Add <code>.md</code> files in subdirectories under <code>content/</code> and run <code>node build.js</code>.</p>`;
+            <h3 class="obs-note-row-title">${p.title}</h3>
+            <p class="obs-note-row-excerpt">${p.excerpt}</p>
+            ${tags ? `<div class="obs-tags-inline">${tags}</div>` : ''}
+          </a>`;
+        }).join('');
+        return `
+        <div class="obs-folder-section" data-folder="${f.slug}">
+          <div class="obs-folder-section-header">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span class="obs-folder-section-name">${f.title}</span>
+            <span class="obs-folder-section-count">${f.posts.length} ${f.posts.length === 1 ? 'guide' : 'guides'}</span>
+          </div>
+          <div class="obs-notes-list">${rows}</div>
+        </div>`;
+      }).join('')
+    : `<div class="obs-empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <p>No notes yet. Add <code>.md</code> files in subdirectories under <code>content/</code> and run <code>node build.js</code>.</p>
+      </div>`;
 
   return `${head(`Notes — ${SITE.title}`, 'All notes and guides')}
 ${header('notes')}
-<div class="doc-layout">
-  <aside class="doc-sidebar-left">
-    ${sidebarLinks}
-  </aside>
 
-  <main class="doc-content">
-    <div class="breadcrumb"><a href="./index.html">Home</a> / Notes</div>
-    <h1>All Notes</h1>
-    <p style="color:var(--text-muted);margin-bottom:36px">Real-world guides on Linux, dev tools, system setup, and engineering workflows.</p>
-    <div>
-      ${noteSections}
+<div class="obs-layout">
+
+  <!-- Left Sidebar -->
+  ${renderVaultSidebar({ posts, folders, relPath: '.' })}
+
+  <!-- Main content area -->
+  <main class="obs-main">
+
+    <!-- Clean Header Banner -->
+    <div class="obs-vault-header">
+      <div class="obs-vault-header-inner">
+        <div class="obs-vault-title-row">
+          <h1 class="obs-vault-title">Notes</h1>
+          <span class="obs-vault-badge">${posts.length} ${posts.length === 1 ? 'guide' : 'guides'}</span>
+        </div>
+        <p class="obs-vault-desc">Search, filter by topic, or browse by category.</p>
+      </div>
     </div>
-  </main>
 
-  <aside class="doc-sidebar-right">
-    <div class="toc-title">On this page</div>
-    <ul class="toc-links">
-      <li><a href="#">All Notes</a></li>
-      ${posts.map((p) => `<li><a href="./posts/${p.folder.slug}/${p.slug}.html">${p.title}</a></li>`).join('\n      ')}
-    </ul>
-  </aside>
+    <!-- Clean Controls Bar -->
+    <div class="obs-controls-bar">
+      <div class="obs-controls-inner">
+        <div class="obs-inline-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="obs-quick-search" placeholder="Search notes by title, tag, or content..." autocomplete="off" />
+          <button id="obs-search-clear" class="obs-search-clear-btn" aria-label="Clear search" style="display:none;">&times;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Centered Content Area -->
+    <div class="obs-content-area">
+      <div class="obs-content-inner" id="obs-notes-container">
+        ${obsFileRows}
+        <div id="obs-no-results" class="obs-empty-search" style="display: none;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <p>No notes matched your search or filter.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
 ${footer()}`;
 }
 
-function buildCategory(folder, folders) {
+function buildCategory(folder, folders, allPosts) {
   const relPath = '../..';
-
-  const sidebarLinks = folders
-    .map((f) => {
-      if (f.posts.length === 0) return '';
-      const isCurrentFolder = f.slug === folder.slug;
-      const links = f.posts
-        .map((p) => `<li><a href="${relPath}/posts/${f.slug}/${p.slug}.html">${p.title}</a></li>`)
-        .join('\n');
-      return `<div class="sidebar-group${isCurrentFolder ? '' : ' collapsed'}">
-        <div class="sidebar-title">
-          <span>${f.title}</span>
-          <span class="sidebar-arrow">&#9662;</span>
-        </div>
-        <ul class="sidebar-links">
-          ${links}
-        </ul>
-      </div>`;
-    })
-    .join('\n');
 
   const postCards = folder.posts.length > 0
     ? folder.posts.map((p) => {
@@ -604,7 +723,7 @@ function buildCategory(folder, folders) {
         return `<a href="${relPath}/posts/${folder.slug}/${p.slug}.html" class="note-row">
           <div class="note-row-title">${p.title}</div>
           <div class="note-row-meta">
-            <span class="note-row-date">${isoDate(p.date)}</span>
+            <span class="note-row-date">${fmtDate(p.date)}</span>
             <div class="tag-row">${tags}</div>
           </div>
           <p class="note-row-excerpt">${p.excerpt}</p>
@@ -619,9 +738,8 @@ function buildCategory(folder, folders) {
   return `${head(`${folder.title} — ${SITE.title}`, folder.description, relPath)}
 ${header('notes', relPath)}
 <div class="doc-layout">
-  <aside class="doc-sidebar-left">
-    ${sidebarLinks}
-  </aside>
+  <!-- Left Navigation Sidebar -->
+  ${renderVaultSidebar({ posts: allPosts, folders, currentFolder: folder, relPath })}
 
   <main class="doc-content">
     <div class="breadcrumb"><a href="${relPath}/index.html">Home</a> / <a href="${relPath}/notes.html">Notes</a> / ${folder.title}</div>
@@ -664,13 +782,13 @@ function build() {
     // Generate category index page
     fs.writeFileSync(
       path.join(SITE_DIR, 'posts', folder.slug, 'index.html'),
-      buildCategory(folder, folders)
+      buildCategory(folder, folders, posts)
     );
     // Generate individual post pages
     for (const post of folder.posts) {
       fs.writeFileSync(
         path.join(SITE_DIR, 'posts', folder.slug, `${post.slug}.html`),
-        buildPost(post, folders)
+        buildPost(post, folders, posts)
       );
     }
   }
