@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kanishk-dev",
+  "compatibility_date": "2026-08-15",
+  "assets": {
+    "directory": "./site"
+  }
+}
