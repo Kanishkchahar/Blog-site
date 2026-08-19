@@ -1,5 +1,5 @@
 ---
-title: DaVinci Resolve Studio 21 — Linux Installation & License Bypass Guide
+title: DaVinci Installation & License Bypass Guide
 date: 2026-08-15
 tags: [fedora, linux, davinci-resolve, nvidia, gpu]
 excerpt: Complete guide to installing DaVinci Resolve Studio 21 on Fedora, applying the license bypass patch, fixing bundled library conflicts, and configuring NVIDIA GPU support under Wayland and X11.
